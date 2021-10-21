@@ -9,7 +9,7 @@ import (
 
 type AppConfig struct {
 	ServerAddress string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	DatabaseDSN   string `env:"DATABASE_DSN" envDefault:"postgresql://practicum:practicum@127.0.0.1:5432/postgres"`
+	DatabaseDSN   string `env:"DATABASE_DSN" envDefault:"postgresql://practicum_project:practicum_project@127.0.0.1:5432/mdb"`
 	Reinit        bool   `env:"REINIT" envDefault:"true"`
 }
 
