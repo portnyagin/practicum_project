@@ -21,8 +21,8 @@ func (handler *PostgresqlHandler) Execute(ctx context.Context, statement string,
 	if err != nil {
 		return err
 	}
-
 	defer conn.Release()
+
 	if len(args) > 0 {
 		_, err = conn.Exec(ctx, statement, args...)
 	} else {

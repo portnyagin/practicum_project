@@ -2,11 +2,12 @@ package ddl
 
 const createUsers = "create table if not exists users (\n" +
 	"id numeric primary key,\n" +
-	"login varchar not null,\n" +
-	"pass varchar  not null\n" +
-	");\n" +
+	"login varchar not null, \n" +
+	"pass varchar  not null, \n" +
+	"active numeric not null default 1" +
+	"); \n" +
 	"" +
-	"create sequence if not exists seq_user increment by 1 no minvalue no maxvalue start with 1 cache 10 owned by users.id;\n" +
+	"create sequence if not exists seq_user increment by 1 no minvalue no maxvalue start with 1 cache 10 owned by users.id; \n" +
 	"create index if not exists user_login_idx on users (login);"
 
 const createOrders = "create table if not exists orders (\n" +

@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+//go:generate mockgen -destination=mocks/mock_postgres_handler.go -package=mocks . DBHandler
 type DBHandler interface {
 	Execute(ctx context.Context, statement string, args ...interface{}) error
 	ExecuteBatch(ctx context.Context, statement string, args [][]interface{}) error
@@ -17,6 +18,7 @@ type Rows interface {
 	Next() bool
 }
 
+//go:generate mockgen -destination=mocks/mock_row.go -package=mocks . Row
 type Row interface {
 	Scan(dest ...interface{}) error
 }

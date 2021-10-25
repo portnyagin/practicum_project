@@ -3,6 +3,7 @@ package infrastructure
 import (
 	ctx "context"
 	"fmt"
+	"golang.org/x/net/context"
 	"testing"
 )
 
@@ -81,4 +82,13 @@ func TestPostgresqlHandler_ExecuteBatch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPostgresqlHandler_SelectRow(t *testing.T) {
+	handler := initDatabase()
+	row, err := handler.QueryRow(context.Background(), "select * from users where 1=0")
+	var res int
+	err = row.Scan(&res)
+	fmt.Println(row)
+	fmt.Println(err)
 }
