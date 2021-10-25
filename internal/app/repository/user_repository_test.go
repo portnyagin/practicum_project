@@ -5,8 +5,9 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/portnyagin/practicum_project/internal/app/database/query"
-	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
+	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler/mocks"
+	"go.uber.org/zap"
 	"testing"
 )
 
@@ -36,8 +37,8 @@ func TestUserRepository_Save(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	postgresHandler := mocks.NewMockDBHandler(mockCtrl)
-
-	target := NewUserRepository(postgresHandler)
+	l, _ := zap.NewDevelopment()
+	target := NewUserRepository(postgresHandler, l)
 	//initDatabase(context.Background(), postgresHandler)
 
 	for _, tt := range tests {
@@ -95,7 +96,8 @@ func TestUserRepository_Check(t *testing.T) {
 	postgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 22", "pass").Return(checkRow, nil)
 	postgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 23", gomock.Any()).Return(emptyRow, nil)
 
-	target := NewUserRepository(postgresHandler)
+	l, _ := zap.NewDevelopment()
+	target := NewUserRepository(postgresHandler, l)
 	//initDatabase(context.Background(), postgresHandler)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,12 +145,13 @@ func TestUserRepository_SaveCheckInt(t *testing.T) {
 			wantErr:   false,
 		},
 	}
-	postgresHandler, err := infrastructure.NewPostgresqlHandler(context.Background(), Datasource)
+	postgresHandler, err := postgres.NewPostgresqlHandler(context.Background(), Datasource)
 
 	if err != nil {
 		panic(err)
 	}
-	target := NewUserRepository(postgresHandler)
+	l, _ := zap.NewDevelopment()
+	target := NewUserRepository(postgresHandler, l)
 	initDatabase(context.Background(), postgresHandler)
 
 	for _, tt := range tests {

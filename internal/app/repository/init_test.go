@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
+	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"os"
 	"testing"
 )
@@ -12,7 +12,7 @@ const Datasource = "postgresql://practicum_ut:practicum_ut@127.0.0.1:5432/postgr
 
 //var postgresHandler *infrastructure.PostgresqlHandler
 
-func initDatabase(ctx context.Context, h *infrastructure.PostgresqlHandler) {
+func initDatabase(ctx context.Context, h *postgres.PostgresqlHandler) {
 	err := ClearDatabase(ctx, h)
 	if err != nil {
 		fmt.Println("can't clear database")
