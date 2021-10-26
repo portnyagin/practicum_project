@@ -5,9 +5,7 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/portnyagin/practicum_project/internal/app/database/query"
-	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler/mocks"
-	"go.uber.org/zap"
 	"testing"
 )
 
@@ -37,8 +35,8 @@ func TestUserRepository_Save(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	postgresHandler := mocks.NewMockDBHandler(mockCtrl)
-	l, _ := zap.NewDevelopment()
-	target := NewUserRepository(postgresHandler, l)
+
+	target, _ := NewUserRepository(postgresHandler, Log)
 	//initDatabase(context.Background(), postgresHandler)
 
 	for _, tt := range tests {
@@ -91,17 +89,15 @@ func TestUserRepository_Check(t *testing.T) {
 	emptyRow := mocks.NewMockRow(mockCtrl)
 	emptyRow.EXPECT().Scan(gomock.Any()).Return(errors.New("no rows in result set"))
 
-	postgresHandler := mocks.NewMockDBHandler(mockCtrl)
+	mockPostgresHandler := mocks.NewMockDBHandler(mockCtrl)
 
-	postgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 22", "pass").Return(checkRow, nil)
-	postgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 23", gomock.Any()).Return(emptyRow, nil)
+	mockPostgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 22", "pass").Return(checkRow, nil)
+	mockPostgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 23", gomock.Any()).Return(emptyRow, nil)
 
-	l, _ := zap.NewDevelopment()
-	target := NewUserRepository(postgresHandler, l)
+	target, _ := NewUserRepository(mockPostgresHandler, Log)
 	//initDatabase(context.Background(), postgresHandler)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			got, err := target.Check(context.Background(), tt.args.login, tt.args.pass)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Check() error = %v, wantErr %v", err, tt.wantErr)
@@ -145,13 +141,8 @@ func TestUserRepository_SaveCheckInt(t *testing.T) {
 			wantErr:   false,
 		},
 	}
-	postgresHandler, err := postgres.NewPostgresqlHandler(context.Background(), Datasource)
 
-	if err != nil {
-		panic(err)
-	}
-	l, _ := zap.NewDevelopment()
-	target := NewUserRepository(postgresHandler, l)
+	target, _ := NewUserRepository(postgresHandler, Log)
 	initDatabase(context.Background(), postgresHandler)
 
 	for _, tt := range tests {

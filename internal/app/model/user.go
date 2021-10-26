@@ -2,7 +2,7 @@ package model
 
 import "context"
 
-type Repository interface {
+type UserRepository interface {
 	Save(ctx context.Context, login string, pass string) error
 	Check(ctx context.Context, login string, pass string) (bool, error)
 }

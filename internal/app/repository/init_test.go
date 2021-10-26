@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
+	"go.uber.org/zap"
 	"os"
 	"testing"
 )
 
 const Datasource = "postgresql://practicum_ut:practicum_ut@127.0.0.1:5432/postgres"
 
-//var postgresHandler *infrastructure.PostgresqlHandler
+var postgresHandler *postgres.PostgresqlHandler
+var Log *zap.Logger
 
 func initDatabase(ctx context.Context, h *postgres.PostgresqlHandler) {
 	err := ClearDatabase(ctx, h)
@@ -27,8 +29,9 @@ func initDatabase(ctx context.Context, h *postgres.PostgresqlHandler) {
 
 func TestMain(m *testing.M) {
 	var err error
-	//postgresHandler, err = infrastructure.NewPostgresqlHandler(context.Background(), Datasource)
+	postgresHandler, err = postgres.NewPostgresqlHandler(context.Background(), Datasource)
 
+	Log, _ = zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}

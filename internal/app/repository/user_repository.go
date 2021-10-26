@@ -5,22 +5,26 @@ import (
 	"errors"
 	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
+	"github.com/portnyagin/practicum_project/internal/app/model"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
 )
 
-type UserRepository struct {
+type UserRepositoryImpl struct {
 	h basedbhandler.DBHandler
 	l *infrastructure.Logger
 }
 
-func NewUserRepository(dbHandler basedbhandler.DBHandler, log *infrastructure.Logger) *UserRepository {
-	var target UserRepository
+func NewUserRepository(dbHandler basedbhandler.DBHandler, log *infrastructure.Logger) (model.UserRepository, error) {
+	var target UserRepositoryImpl
+	if dbHandler == nil {
+		return nil, errors.New("can't init user repository")
+	}
 	target.h = dbHandler
 	target.l = log
-	return &target
+	return &target, nil
 }
 
-func (ur *UserRepository) Save(ctx context.Context, login string, pass string) error {
+func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass string) error {
 	if login == "" {
 		ur.l.Info("UserRepository: empty login authorization attempt")
 		return errors.New("can't register empty login")
@@ -30,10 +34,15 @@ func (ur *UserRepository) Save(ctx context.Context, login string, pass string) e
 		return errors.New("pass cannot be empty")
 	}
 	err := ur.h.Execute(ctx, query.CreateUser, login, pass)
+	// TODO: нужен  userID в ответ
+	// TODO: нужна транзакция
+	userID := 0
+	err = ur.h.Execute(ctx, query.CreateAccount, userID)
+
 	return err
 }
 
-func (ur *UserRepository) Check(ctx context.Context, login string, pass string) (bool, error) {
+func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass string) (bool, error) {
 	if login == "" {
 		ur.l.Info("UserRepository: empty login authorization attempt")
 		return false, errors.New("can't register empty login")
@@ -46,7 +55,6 @@ func (ur *UserRepository) Check(ctx context.Context, login string, pass string) 
 	if err != nil {
 		return false, err
 	}
-
 	var res int
 	err = row.Scan(&res)
 	if err != nil {

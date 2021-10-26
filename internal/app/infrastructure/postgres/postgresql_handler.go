@@ -74,13 +74,11 @@ func (handler *PostgresqlHandler) QueryRow(ctx context.Context, statement string
 
 func (handler *PostgresqlHandler) Query(ctx context.Context, statement string, args ...interface{}) (basedbhandler.Rows, error) {
 	var rows pgx.Rows
-
 	conn, err := handler.pool.Acquire(ctx)
 	defer conn.Release()
 	if err != nil {
 		return nil, err
 	}
-
 	if len(args) > 0 {
 		rows, err = conn.Query(ctx, statement, args...)
 	} else {
@@ -101,7 +99,6 @@ func (handler *PostgresqlHandler) Close() {
 func NewPostgresqlHandler(ctx context.Context, dataSource string) (*PostgresqlHandler, error) {
 	// Format DSN
 	//("postgresql://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Dbname)
-
 	poolConfig, err := pgxpool.ParseConfig(dataSource)
 	if err != nil {
 		return nil, err
