@@ -34,7 +34,8 @@ func TestOrderRepositoryImpl_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fmt.Println("save object")
-			if err := target.Save(context.Background(), tt.order); (err != nil) != tt.wantErr {
+			err := target.Save(context.Background(), tt.order)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Save() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			fmt.Println("get object")

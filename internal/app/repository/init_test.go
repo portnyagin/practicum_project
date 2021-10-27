@@ -11,10 +11,10 @@ import (
 
 const Datasource = "postgresql://practicum_ut:practicum_ut@127.0.0.1:5432/postgres"
 
-var postgresHandler *postgres.PostgresqlHandler
+var postgresHandler *postgres.PostgresqlHandlerTX
 var Log *zap.Logger
 
-func initDatabase(ctx context.Context, h *postgres.PostgresqlHandler) {
+func initDatabase(ctx context.Context, h *postgres.PostgresqlHandlerTX) {
 	err := ClearDatabase(ctx, h)
 	if err != nil {
 		fmt.Println("can't clear database")
@@ -29,9 +29,9 @@ func initDatabase(ctx context.Context, h *postgres.PostgresqlHandler) {
 
 func TestMain(m *testing.M) {
 	var err error
-	postgresHandler, err = postgres.NewPostgresqlHandler(context.Background(), Datasource)
 
 	Log, _ = zap.NewDevelopment()
+	postgresHandler, err = postgres.NewPostgresqlHandlerTX(context.Background(), Datasource, Log)
 	if err != nil {
 		panic(err)
 	}

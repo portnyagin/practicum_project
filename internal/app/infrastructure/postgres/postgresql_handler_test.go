@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-const Datasource = "postgresql://practicum_ut:practicum_ut@127.0.0.1:5432/postgres"
-
 func initDatabase() *PostgresqlHandler {
 	h, err := NewPostgresqlHandler(ctx.Background(), Datasource)
 	if err != nil {

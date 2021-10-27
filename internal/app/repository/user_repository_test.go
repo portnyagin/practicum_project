@@ -42,6 +42,7 @@ func TestUserRepository_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			postgresHandler.EXPECT().Execute(context.Background(), query.CreateUser, tt.args.login, tt.args.pass).Return(nil)
+			postgresHandler.EXPECT().QueryRow(context.Background(), query.CreateUser, tt.args.login, tt.args.pass).Return(10)
 			if err := target.Save(context.Background(), tt.args.login, tt.args.pass); (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository Save() error = %v, wantErr %v", err, tt.wantErr)
 			}

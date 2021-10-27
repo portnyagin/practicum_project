@@ -7,6 +7,7 @@ import (
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/model"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
+	"go.uber.org/zap"
 )
 
 type UserRepositoryImpl struct {
@@ -33,13 +34,19 @@ func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass strin
 		ur.l.Info("UserRepository: empty pass authorization  attempt")
 		return errors.New("pass cannot be empty")
 	}
-	err := ur.h.Execute(ctx, query.CreateUser, login, pass)
-	// TODO: нужен  userID в ответ
-	// TODO: нужна транзакция
-	userID := 0
+	var userID int
+	row, err := ur.h.QueryRow(ctx, query.CreateUser, login, pass)
+	err = row.Scan(&userID)
+	if err != nil {
+		ur.l.Error("UserRepository: cannt get user_id", zap.Error(err))
+		return err
+	}
 	err = ur.h.Execute(ctx, query.CreateAccount, userID)
-
-	return err
+	if err != nil {
+		ur.l.Error("UserRepository: cannt create account for user", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass string) (bool, error) {
