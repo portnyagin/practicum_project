@@ -12,18 +12,18 @@ import (
 	basedbhandler "github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
 )
 
-// MockDBHandler is a mock of DBHandler interface.
+// MockDBHandler is a mocks of DBHandler interface.
 type MockDBHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockDBHandlerMockRecorder
 }
 
-// MockDBHandlerMockRecorder is the mock recorder for MockDBHandler.
+// MockDBHandlerMockRecorder is the mocks recorder for MockDBHandler.
 type MockDBHandlerMockRecorder struct {
 	mock *MockDBHandler
 }
 
-// NewMockDBHandler creates a new mock instance.
+// NewMockDBHandler creates a new mocks instance.
 func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 	mock := &MockDBHandler{ctrl: ctrl}
 	mock.recorder = &MockDBHandlerMockRecorder{mock}

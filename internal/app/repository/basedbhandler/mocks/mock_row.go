@@ -10,18 +10,18 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockRow is a mock of Row interface.
+// MockRow is a mocks of Row interface.
 type MockRow struct {
 	ctrl     *gomock.Controller
 	recorder *MockRowMockRecorder
 }
 
-// MockRowMockRecorder is the mock recorder for MockRow.
+// MockRowMockRecorder is the mocks recorder for MockRow.
 type MockRowMockRecorder struct {
 	mock *MockRow
 }
 
-// NewMockRow creates a new mock instance.
+// NewMockRow creates a new mocks instance.
 func NewMockRow(ctrl *gomock.Controller) *MockRow {
 	mock := &MockRow{ctrl: ctrl}
 	mock.recorder = &MockRowMockRecorder{mock}
