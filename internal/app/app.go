@@ -2,11 +2,15 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	cfg "github.com/portnyagin/practicum_project/internal/app/config"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"github.com/portnyagin/practicum_project/internal/app/repository"
 	"go.uber.org/zap"
 	"log"
+	"net/http"
 )
 
 func Start() {
@@ -39,5 +43,15 @@ func Start() {
 		logger.Fatal("can't init database structure", zap.Error(err))
 		return
 	}
+	router := chi.NewRouter()
+	router.Use(middleware.CleanPath)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Route("/", mapRoute)
 
+	err = http.ListenAndServe(config.ServerAddress, router)
+	if err != nil {
+		fmt.Println("can't start service")
+		fmt.Println(err)
+	}
 }
