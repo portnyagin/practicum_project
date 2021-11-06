@@ -8,7 +8,7 @@ const createUsers = "create table if not exists users (\n" +
 	"); \n" +
 	"" +
 	"create sequence if not exists seq_user increment by 1 no minvalue no maxvalue start with 1 cache 10 owned by users.id; \n" +
-	"create index if not exists user_login_idx on users (login);"
+	"create unique index if not exists user_login_idx on users (login);"
 
 const createOrders = "create table if not exists orders (\n" +
 	"id numeric primary key,\n" +
@@ -21,7 +21,7 @@ const createOrders = "create table if not exists orders (\n" +
 	"" +
 	"create sequence if not exists seq_order increment by 1 no minvalue no maxvalue start with 1 cache 10 owned by orders.id;\n" +
 	"create index if not exists order_user_id_idx on orders (user_id,status );\n" +
-	"create index if not exists order_num_idx on orders (num);\n"
+	"create unique index if not exists order_num_idx on orders (num);\n"
 
 const createAccounts = "create table if not exists accounts ( \n" +
 	"id numeric primary key,\n" +
@@ -37,6 +37,7 @@ const createOperations = "create table if not exists operations (\n" +
 	"id numeric primary key,\n" +
 	"account_id numeric not null,\n" +
 	"order_id numeric not null,\n" +
+	"order_num numeric not null,\n" +
 	"operation_type varchar not null ,\n" +
 	"amount numeric not null,\n" +
 	"processed_at numeric not null\n" +

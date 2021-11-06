@@ -11,7 +11,7 @@ type AppConfig struct {
 	ServerAddress         string `env:"RUN_ADDRESS" envDefault:":8080"`
 	DatabaseDSN           string `env:"DATABASE_URI" envDefault:"postgresql://practicum_project:practicum_project@127.0.0.1:5432/mdb"`
 	AccrualServiceAddress string `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:":3000"`
-	Reinit                bool   `env:"REINIT" envDefault:"true"`
+	Reinit                bool   `env:"REINIT" envDefault:"false"`
 }
 
 func (config *AppConfig) Init() error {
@@ -24,7 +24,7 @@ func (config *AppConfig) Init() error {
 	pflag.StringVarP(&config.ServerAddress, "a", "a", config.ServerAddress, "Http-server address")
 	pflag.StringVarP(&config.DatabaseDSN, "d", "d", config.DatabaseDSN, "Database connection string")
 	pflag.StringVarP(&config.AccrualServiceAddress, "r", "r", config.AccrualServiceAddress, "Accrual Service Address")
-	pflag.BoolVarP(&config.Reinit, "c", "r", config.Reinit, "Reinit database")
+	pflag.BoolVarP(&config.Reinit, "c", "c", config.Reinit, "Reinit database")
 	pflag.Parse()
 
 	if config.ServerAddress == "" || config.DatabaseDSN == "" {

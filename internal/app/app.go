@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	cfg "github.com/portnyagin/practicum_project/internal/app/config"
+	"github.com/portnyagin/practicum_project/internal/app/handler"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"github.com/portnyagin/practicum_project/internal/app/repository"
+	"github.com/portnyagin/practicum_project/internal/app/service"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -43,11 +44,36 @@ func Start() {
 		logger.Fatal("can't init database structure", zap.Error(err))
 		return
 	}
+
+	userRepository, err := repository.NewUserRepository(postgresHandler, logger)
+	if err != nil {
+		logger.Fatal("can't init user repopsitory", zap.Error(err))
+		return
+	}
+
+	orderRepository, err := repository.NewOrderRepository(postgresHandler, logger)
+	if err != nil {
+		logger.Fatal("can't init order repopsitory", zap.Error(err))
+		return
+	}
+	balanceRepository, err := repository.NewBalanceRepository(postgresHandler, logger)
+	if err != nil {
+		logger.Fatal("can't init balance repopsitory", zap.Error(err))
+		return
+	}
+
+	authService := service.NewAuthService(userRepository, logger)
+	orderService := service.NewOrderService(orderRepository, logger)
+	balanceService := service.NewBalanceService(balanceRepository, logger)
+	auth := handler.NewAuth("secret")
+	authHandler := handler.NewAuthHandler(authService, auth, logger)
+	orderHandler := handler.NewOrderHandler(orderService, auth, logger)
+	balanceHandler := handler.NewBalanceHandler(balanceService, auth, logger)
 	router := chi.NewRouter()
-	router.Use(middleware.CleanPath)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Route("/", mapRoute)
+
+	publicRoutes(router, authHandler)
+	protectedOrderRoutes(router, auth.GetJWTAuth(), orderHandler)
+	protectedBalanceRoutes(router, auth.GetJWTAuth(), balanceHandler)
 
 	err = http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {

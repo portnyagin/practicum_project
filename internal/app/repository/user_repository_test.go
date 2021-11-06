@@ -6,6 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler/mocks"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -20,14 +21,6 @@ func TestUserRepository_Save(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "UserRepository. Save. Case #1",
-			args:    args{"", "pass"},
-			wantErr: true,
-		},
-		{name: "UserRepository. Save. Case #2",
-			args:    args{"login11", ""},
-			wantErr: true,
-		},
-		{name: "UserRepository. Save. Case #3",
 			args:    args{"login 12", "pass"},
 			wantErr: false,
 		},
@@ -37,14 +30,21 @@ func TestUserRepository_Save(t *testing.T) {
 	postgresHandler := mocks.NewMockDBHandler(mockCtrl)
 
 	target, _ := NewUserRepository(postgresHandler, Log)
-	//initDatabase(context.Background(), postgresHandler)
+
+	checkRow := mocks.NewMockRow(mockCtrl)
+	checkRow.EXPECT().Scan(gomock.Any()).SetArg(0, 10).Return(nil).AnyTimes()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			postgresHandler.EXPECT().Execute(context.Background(), query.CreateUser, tt.args.login, tt.args.pass).Return(nil)
-			postgresHandler.EXPECT().QueryRow(context.Background(), query.CreateUser, tt.args.login, tt.args.pass).Return(10)
-			if err := target.Save(context.Background(), tt.args.login, tt.args.pass); (err != nil) != tt.wantErr {
+			postgresHandler.EXPECT().Execute(context.Background(), query.CreateUser, gomock.Any(), tt.args.login, tt.args.pass).Return(nil)
+			postgresHandler.EXPECT().Execute(context.Background(), query.CreateAccount, gomock.Any()).Return(nil)
+			postgresHandler.EXPECT().QueryRow(context.Background(), query.GetNextUserID).Return(checkRow, nil)
+			userID, err := target.Save(context.Background(), tt.args.login, tt.args.pass)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository Save() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if userID == 0 {
+				t.Errorf("Got userID=0")
 			}
 		})
 	}
@@ -101,11 +101,11 @@ func TestUserRepository_Check(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := target.Check(context.Background(), tt.args.login, tt.args.pass)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Check() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository Check() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Check() got = %v, want %v", got, tt.want)
+				t.Errorf("UserRepository Check() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -148,17 +148,80 @@ func TestUserRepository_SaveCheckInt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := target.Save(context.Background(), tt.argsSave.login, tt.argsSave.pass); (err != nil) != tt.wantErr {
+
+			userID, err := target.Save(context.Background(), tt.argsSave.login, tt.argsSave.pass)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository Save() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if userID == 0 {
+				t.Errorf("Got userID=0")
 			}
 
 			got, err := target.Check(context.Background(), tt.argsCheck.login, tt.argsCheck.pass)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Check() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository Check() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Check() got = %v, want %v", got, tt.want)
+				t.Errorf("UserRepository Check() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUserRepository_SaveGetInt(t *testing.T) {
+	type args struct {
+		login string
+		pass  string
+	}
+	tests := []struct {
+		name      string
+		argsSave  args
+		argsCheck args
+		want      bool
+		wantErr   bool
+	}{
+		{name: "UserRepository. Save+Get. Case #1",
+			argsSave:  args{"user31", "pass"},
+			argsCheck: args{"user31", "pass"},
+			want:      true,
+			wantErr:   false,
+		},
+		{name: "UserRepository. Save+Get. Case #2",
+			argsSave:  args{"user32", "pass"},
+			argsCheck: args{"user32", "badPass"},
+			want:      false,
+			wantErr:   false,
+		},
+		{name: "UserRepository. Save+Get. Case #3",
+			argsSave:  args{"user34", "pass"},
+			argsCheck: args{"unexistUser", "badPass"},
+			want:      false,
+			wantErr:   true,
+		},
+	}
+
+	target, _ := NewUserRepository(postgresHandler, Log)
+	initDatabase(context.Background(), postgresHandler)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			userID, err := target.Save(context.Background(), tt.argsSave.login, tt.argsSave.pass)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UserRepository Save() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if userID == 0 {
+				t.Errorf("Got userID=0")
+			}
+
+			user, err := target.GetUserByLogin(context.Background(), tt.argsCheck.login)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UserRepository Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				assert.Equal(t, tt.argsSave.login, user.Login, "UserRepository. Get() compare result. login want = %s, got %s", tt.argsSave.login, user.Login)
+				assert.Equal(t, tt.argsSave.pass, user.Pass, "UserRepository. Get() compare result. pass want = %s, got %s", tt.argsSave.pass, user.Pass)
 			}
 		})
 	}

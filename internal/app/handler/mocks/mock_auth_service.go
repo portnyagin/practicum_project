@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,16 +35,32 @@ func (m *MockAuthService) EXPECT() *MockAuthServiceMockRecorder {
 	return m.recorder
 }
 
-// Register mocks base method.
-func (m *MockAuthService) Register(arg0 *dto.User) error {
+// Check mocks base method.
+func (m *MockAuthService) Check(arg0 context.Context, arg1 *dto.User) (*dto.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Check", arg0, arg1)
+	ret0, _ := ret[0].(*dto.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Check indicates an expected call of Check.
+func (mr *MockAuthServiceMockRecorder) Check(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockAuthService)(nil).Check), arg0, arg1)
+}
+
+// Register mocks base method.
+func (m *MockAuthService) Register(arg0 context.Context, arg1 *dto.User) (*dto.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Register", arg0, arg1)
+	ret0, _ := ret[0].(*dto.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockAuthServiceMockRecorder) Register(arg0 interface{}) *gomock.Call {
+func (mr *MockAuthServiceMockRecorder) Register(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockAuthService)(nil).Register), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockAuthService)(nil).Register), arg0, arg1)
 }

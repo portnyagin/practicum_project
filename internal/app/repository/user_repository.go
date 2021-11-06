@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/model"
@@ -25,28 +27,36 @@ func NewUserRepository(dbHandler basedbhandler.DBHandler, log *infrastructure.Lo
 	return &target, nil
 }
 
-func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass string) error {
-	if login == "" {
-		ur.l.Info("UserRepository: empty login authorization attempt")
-		return errors.New("can't register empty login")
-	}
-	if pass == "" {
-		ur.l.Info("UserRepository: empty pass authorization  attempt")
-		return errors.New("pass cannot be empty")
-	}
+func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass string) (int, error) {
 	var userID int
-	row, err := ur.h.QueryRow(ctx, query.CreateUser, login, pass)
+	row, err := ur.h.QueryRow(ctx, query.GetNextUserID)
+	if err != nil {
+		ur.l.Error("UserRepository: cannt get userID")
+		return 0, err
+	}
 	err = row.Scan(&userID)
 	if err != nil {
-		ur.l.Error("UserRepository: cannt get user_id", zap.Error(err))
-		return err
+		ur.l.Error("UserRepository: cannt get userID")
+		return 0, err
+	}
+
+	err = ur.h.Execute(ctx, query.CreateUser, userID, login, pass)
+	if err != nil {
+		ur.l.Error("UserRepository: cannt create user", zap.Error(err))
+		return 0, err
 	}
 	err = ur.h.Execute(ctx, query.CreateAccount, userID)
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == pgerrcode.UniqueViolation {
+			return 0, &model.UniqueViolation
+		}
+	}
 	if err != nil {
 		ur.l.Error("UserRepository: cannt create account for user", zap.Error(err))
-		return err
+		return 0, err
 	}
-	return nil
+	return userID, nil
 }
 
 func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass string) (bool, error) {
@@ -68,4 +78,22 @@ func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass stri
 		return false, nil
 	}
 	return true, nil
+}
+
+func (ur *UserRepositoryImpl) GetUserByLogin(ctx context.Context, login string) (*model.User, error) {
+
+	row, err := ur.h.QueryRow(ctx, query.GetUserByLogin, login)
+	if err != nil {
+		return nil, err
+	}
+	var res model.User
+	err = row.Scan(&res.ID, &res.Login, &res.Pass)
+	if err != nil && err.Error() == "no rows in result set" {
+		return nil, &model.NoRowFound
+	}
+
+	if err != nil {
+		return nil, nil
+	}
+	return &res, nil
 }
