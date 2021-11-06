@@ -19,7 +19,7 @@ func TestOrderRepositoryImpl_Save(t *testing.T) {
 		{
 			name: "OrderRepository. Save. Case #1",
 			order: model.Order{
-				Id:        0,
+				ID:        0,
 				UserID:    1,
 				Num:       "11",
 				Status:    "STATUS",
@@ -62,7 +62,7 @@ func TestOrderRepositoryImpl_UpdateStatus(t *testing.T) {
 		{
 			name: "OrderRepository. Update. Case #1",
 			order: model.Order{
-				Id:        2,
+				ID:        2,
 				UserID:    2,
 				Num:       "21",
 				Status:    "STATUS",

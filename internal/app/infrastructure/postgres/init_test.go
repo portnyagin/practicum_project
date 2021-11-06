@@ -36,9 +36,6 @@ func initDatabase2() {
 func TestMain(m *testing.M) {
 	var err error
 	Log, _ = zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
 	initDatabase2()
 	target, err = NewPostgresqlHandlerTX(context.Background(), Datasource, Log)
 	if err != nil {

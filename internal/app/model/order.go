@@ -15,7 +15,7 @@ type OrderRepository interface {
 }
 
 type Order struct {
-	Id        int
+	ID        int
 	UserID    int
 	Num       string
 	Status    string

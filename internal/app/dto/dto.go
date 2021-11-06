@@ -56,5 +56,5 @@ var ErrUnauthorized = errors.New("User unauthorized")
 var ErrOrderRegistered = errors.New("order registered early")
 var ErrOrderRegisteredByAnotherUser = errors.New("order registered early by another user")
 
-var ErrNotEnoughFunds = errors.New("Not enougth founds")
-var ErrBadOrderNum = errors.New("Bad order num")
+var ErrNotEnoughFunds = errors.New("not enougth founds")
+var ErrBadOrderNum = errors.New("bad order num")

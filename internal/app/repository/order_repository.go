@@ -45,7 +45,7 @@ func (or *OrderRepositoryImpl) GetByID(ctx context.Context, orderID int) (*model
 		or.l.Error("OrderRepository: request error", zap.String("query", query.GetOrderByID), zap.Int("orderID", orderID), zap.Error(err))
 		return nil, err
 	}
-	err = row.Scan(&res.Id, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
+	err = row.Scan(&res.ID, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
 	if err != nil && err.Error() == "no rows in result set" {
 		return nil, &model.NoRowFound
 	}
@@ -63,7 +63,7 @@ func (or *OrderRepositoryImpl) GetByNum(ctx context.Context, num string) (*model
 		or.l.Error("OrderRepository: request error", zap.String("query", query.GetOrderByNum), zap.String("Num", num), zap.Error(err))
 		return nil, err
 	}
-	err = row.Scan(&res.Id, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
+	err = row.Scan(&res.ID, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
 	if err != nil && err.Error() == "no rows in result set" {
 		return nil, &model.NoRowFound
 	}
@@ -91,7 +91,7 @@ func (or *OrderRepositoryImpl) FindByUser(ctx context.Context, userID int) ([]mo
 
 	for rows.Next() {
 		var o model.Order
-		err := rows.Scan(&o.Id, &o.Num, &o.UserID, &o.Status, &o.UploadAt, &o.UpdatedAt)
+		err := rows.Scan(&o.ID, &o.Num, &o.UserID, &o.Status, &o.UploadAt, &o.UpdatedAt)
 		if err != nil {
 			or.l.Error("OrderRepository: scan rows error", zap.String("query", query.FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
 			break
