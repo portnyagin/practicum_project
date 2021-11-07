@@ -31,6 +31,10 @@ func Start() {
 	if err != nil {
 		logger.Fatal("can't create postgres handler", zap.Error(err))
 	}
+	postgresHandlerTx, err := postgres.NewPostgresqlHandlerTX(context.Background(), config.DatabaseDSN, logger)
+	if err != nil {
+		logger.Fatal("can't create postgres handler", zap.Error(err))
+	}
 
 	if config.Reinit {
 		err = repository.ClearDatabase(context.Background(), postgresHandler)
@@ -39,24 +43,24 @@ func Start() {
 			return
 		}
 	}
-	err = repository.InitDatabase(context.Background(), postgresHandler)
+	err = repository.InitDatabase(context.Background(), postgresHandlerTx)
 	if err != nil {
 		logger.Fatal("can't init database structure", zap.Error(err))
 		return
 	}
 
-	userRepository, err := repository.NewUserRepository(postgresHandler, logger)
+	userRepository, err := repository.NewUserRepository(postgresHandlerTx, logger)
 	if err != nil {
 		logger.Fatal("can't init user repopsitory", zap.Error(err))
 		return
 	}
 
-	orderRepository, err := repository.NewOrderRepository(postgresHandler, logger)
+	orderRepository, err := repository.NewOrderRepository(postgresHandlerTx, logger)
 	if err != nil {
 		logger.Fatal("can't init order repopsitory", zap.Error(err))
 		return
 	}
-	balanceRepository, err := repository.NewBalanceRepository(postgresHandler, logger)
+	balanceRepository, err := repository.NewBalanceRepository(postgresHandlerTx, logger)
 	if err != nil {
 		logger.Fatal("can't init balance repopsitory", zap.Error(err))
 		return
@@ -71,9 +75,9 @@ func Start() {
 	balanceHandler := handler.NewBalanceHandler(balanceService, auth, logger)
 	router := chi.NewRouter()
 
-	publicRoutes(router, authHandler)
-	protectedOrderRoutes(router, auth.GetJWTAuth(), orderHandler)
-	protectedBalanceRoutes(router, auth.GetJWTAuth(), balanceHandler)
+	publicRoutes(router, authHandler, postgresHandlerTx, logger)
+	protectedOrderRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, orderHandler, logger)
+	protectedBalanceRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, balanceHandler, logger)
 
 	err = http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {

@@ -37,8 +37,8 @@ func NewBalanceHandler(bs BalanceService, auth *Auth, l *infrastructure.Logger) 
 500 — внутренняя ошибка сервера.
 */
 func (h *BalanceHandler) GetBalance(w http.ResponseWriter, r *http.Request) {
-	cc := r.Context()
-	userID, _, err := h.auth.GetFromContext(cc)
+	ctx := r.Context()
+	userID, _, err := h.auth.GetFromContext(ctx)
 	if err != nil {
 		h.log.Error("BalanceHandler:can't get params from the token", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
@@ -46,7 +46,7 @@ func (h *BalanceHandler) GetBalance(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	balance, err := h.balanceService.GetCurrentBalance(cc, userID)
+	balance, err := h.balanceService.GetCurrentBalance(ctx, userID)
 	if err != nil {
 		h.log.Error("BalanceHandler:can't get params from the token", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
@@ -92,12 +92,8 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		withdraw  dto.Withdraw
-		contextTx context.Context
+		withdraw dto.Withdraw
 	)
-	// TODO: transactional context
-	contextTx = context.Background()
-
 	err = json.Unmarshal(b, &withdraw)
 	if err != nil {
 		h.log.Error("BalanceHandler:can't unmarshal request body", zap.Error(err))
@@ -106,8 +102,8 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	cc := r.Context()
-	userID, _, err := h.auth.GetFromContext(cc)
+	ctx := r.Context()
+	userID, _, err := h.auth.GetFromContext(ctx)
 	h.log.Info("Try to withdraw funds", zap.String("OrderNum", withdraw.OrderNum), zap.Int("userID", userID))
 	if err != nil {
 		h.log.Error("BalanceHandler:can't get params from the token", zap.Error(err))
@@ -116,7 +112,7 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = h.balanceService.Withdraw(contextTx, &withdraw, userID)
+	err = h.balanceService.Withdraw(ctx, &withdraw, userID)
 	if err != nil {
 		h.log.Error("BalanceHandler:Withdraw error", zap.Error(err))
 		if errors.Is(err, dto.ErrNotEnoughFunds) {
@@ -146,8 +142,8 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 500 — внутренняя ошибка сервера.
 */
 func (h *BalanceHandler) GetWithdrawalsList(w http.ResponseWriter, r *http.Request) {
-	cc := r.Context()
-	userID, _, err := h.auth.GetFromContext(cc)
+	ctx := r.Context()
+	userID, _, err := h.auth.GetFromContext(ctx)
 	if err != nil {
 		h.log.Error("BalanceHandler:can't get params from the token", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
@@ -155,7 +151,7 @@ func (h *BalanceHandler) GetWithdrawalsList(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	res, err := h.balanceService.GetWithdrawalsList(context.Background(), userID)
+	res, err := h.balanceService.GetWithdrawalsList(ctx, userID)
 	if err != nil {
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
 			h.log.Error("BalanceHandler: can't write response", zap.Error(err))

@@ -50,6 +50,21 @@ func (mr *MockOrderRepositoryMockRecorder) FindByUser(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUser", reflect.TypeOf((*MockOrderRepository)(nil).FindByUser), arg0, arg1)
 }
 
+// FindNotProcessed mocks base method.
+func (m *MockOrderRepository) FindNotProcessed(arg0 context.Context) ([]model.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindNotProcessed", arg0)
+	ret0, _ := ret[0].([]model.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindNotProcessed indicates an expected call of FindNotProcessed.
+func (mr *MockOrderRepositoryMockRecorder) FindNotProcessed(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindNotProcessed", reflect.TypeOf((*MockOrderRepository)(nil).FindNotProcessed), arg0)
+}
+
 // GetByID mocks base method.
 func (m *MockOrderRepository) GetByID(arg0 context.Context, arg1 int) (*model.Order, error) {
 	m.ctrl.T.Helper()
@@ -78,6 +93,21 @@ func (m *MockOrderRepository) GetByNum(arg0 context.Context, arg1 string) (*mode
 func (mr *MockOrderRepositoryMockRecorder) GetByNum(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNum", reflect.TypeOf((*MockOrderRepository)(nil).GetByNum), arg0, arg1)
+}
+
+// LockOrder mocks base method.
+func (m *MockOrderRepository) LockOrder(arg0 context.Context, arg1 string) (*model.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LockOrder", arg0, arg1)
+	ret0, _ := ret[0].(*model.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LockOrder indicates an expected call of LockOrder.
+func (mr *MockOrderRepositoryMockRecorder) LockOrder(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockOrder", reflect.TypeOf((*MockOrderRepository)(nil).LockOrder), arg0, arg1)
 }
 
 // Save mocks base method.

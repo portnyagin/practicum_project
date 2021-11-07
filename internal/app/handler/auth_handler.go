@@ -33,6 +33,7 @@ func NewAuthHandler(as AuthService, auth *Auth, l *infrastructure.Logger) *AuthH
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var user dto.User
+
 	b, err := getRequestBody(r)
 	if err != nil {
 		h.log.Error("AuthHandler:can't get request body", zap.Error(err))
@@ -48,7 +49,8 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	u, err := h.authService.Register(context.Background(), &user)
+	ctx := r.Context()
+	u, err := h.authService.Register(ctx, &user)
 	if err != nil {
 		h.log.Error("AuthHandler:recieved an error", zap.Error(err))
 		if errors.Is(err, dto.ErrDuplicateKey) {
@@ -119,7 +121,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	u, err := h.authService.Check(context.Background(), &user)
+	ctx := r.Context()
+	u, err := h.authService.Check(ctx, &user)
 	if err != nil {
 		h.log.Error("AuthHandler: can't check user credential", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {

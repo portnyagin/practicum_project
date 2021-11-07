@@ -58,14 +58,12 @@ func (h *OrderHandler) RegisterNewOrder(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	var (
-		order     dto.Order
-		contextTx context.Context
+		order dto.Order
 	)
-	// TODO: transactional context
-	contextTx = context.Background()
+
 	order.Num = string(b)
-	cc := r.Context()
-	u, _, err := h.auth.GetFromContext(cc)
+	ctx := r.Context()
+	u, _, err := h.auth.GetFromContext(ctx)
 	if err != nil {
 		h.log.Error("OrderHandler:can't get params from the token", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
@@ -74,7 +72,7 @@ func (h *OrderHandler) RegisterNewOrder(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	order.UserID = u
-	err = h.orderService.Save(contextTx, &order)
+	err = h.orderService.Save(ctx, &order)
 	if err != nil {
 		h.log.Error("OrderHandler:recieved an error", zap.Error(err))
 		if errors.Is(err, dto.ErrOrderRegistered) {
@@ -117,8 +115,8 @@ func (h *OrderHandler) RegisterNewOrder(w http.ResponseWriter, r *http.Request) 
 500 — внутренняя ошибка сервера
 */
 func (h *OrderHandler) GetOrderList(w http.ResponseWriter, r *http.Request) {
-	cc := r.Context()
-	userID, _, err := h.auth.GetFromContext(cc)
+	ctx := r.Context()
+	userID, _, err := h.auth.GetFromContext(ctx)
 	if err != nil {
 		h.log.Error("OrderHandler:can't get params from the token", zap.Error(err))
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
@@ -127,7 +125,7 @@ func (h *OrderHandler) GetOrderList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.orderService.GetOrderList(context.Background(), userID)
+	res, err := h.orderService.GetOrderList(ctx, userID)
 	if err != nil {
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
 			h.log.Error("OrderHandler: can't write response", zap.Error(err))
