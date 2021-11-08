@@ -121,7 +121,8 @@ func (r *OrderRepositoryImpl) LockOrder(ctx context.Context, OrderNum string) (*
 }
 
 func (r *OrderRepositoryImpl) FindNotProcessed(ctx context.Context) ([]model.Order, error) {
-	rows, err := r.h.Query(ctx, query.FindOrderByStatuses, model.OrderStatusProcessing, model.OrderStatusNew, model.OrderStatusRegistered, "", "")
+	const rowCountLimit = 20
+	rows, err := r.h.Query(ctx, query.FindOrderByStatuses, model.OrderStatusProcessing, model.OrderStatusNew, model.OrderStatusRegistered, "", "", rowCountLimit)
 	var resArray []model.Order
 	if err != nil {
 		r.l.Error("OrderRepository: request error", zap.String("query", query.FindOrderByStatuses), zap.Error(err))

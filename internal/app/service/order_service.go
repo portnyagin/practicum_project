@@ -56,6 +56,10 @@ func (s *OrderService) Save(ctx context.Context, order *dto.Order) error {
 		s.log.Debug("OrderService: Save. Validation error")
 		return dto.ErrBadParam
 	}
+	if !CheckOrderNum(order.Num) {
+		s.log.Debug("OrderService: Save. Order num validation error")
+		return dto.ErrBadOrderNum
+	}
 
 	exOrder, err := s.dbOrder.GetByNum(ctx, order.Num)
 	if err == nil {

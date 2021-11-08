@@ -65,7 +65,10 @@ func (s *BalanceService) Withdraw(ctx context.Context, obj *dto.Withdraw, userID
 		s.log.Debug("BalanceService: Withdraw. got nil order")
 		return dto.ErrBadParam
 	}
-
+	if !CheckOrderNum(obj.OrderNum) {
+		s.log.Debug("BalanceService: Withdraw. Order num validation error")
+		return dto.ErrBadOrderNum
+	}
 	account, err := s.dbBalance.LockAccount(ctx, userID)
 	if err != nil {
 		s.log.Error("BalanceService: Withdraw. Unexpected error", zap.Error(err))
@@ -81,7 +84,7 @@ func (s *BalanceService) Withdraw(ctx context.Context, obj *dto.Withdraw, userID
 		AccountID:     account.ID,
 		Amount:        obj.Amount,
 		OrderNum:      obj.OrderNum,
-		OperationType: model.OperationCredit,
+		OperationType: model.OperationDebit,
 		ProcessedAt:   time.Now().Truncate(time.Second),
 	}
 	err = s.dbBalance.CreateOperation(ctx, &operation)
@@ -91,7 +94,7 @@ func (s *BalanceService) Withdraw(ctx context.Context, obj *dto.Withdraw, userID
 		return err
 	}
 	account.Balance -= obj.Amount
-	account.Credit += obj.Amount
+	account.Debit += obj.Amount
 	err = s.dbBalance.SaveAccount(ctx, account)
 	if err != nil {
 		s.log.Error("BalanceService: Withdraw. Can't save account", zap.Error(err))

@@ -19,9 +19,13 @@ type TransactionalDBHandler interface {
 	ExecuteBatch(ctx context.Context, statement string, args [][]interface{}) error
 	Query(ctx context.Context, statement string, args ...interface{}) (Rows, error)
 	QueryRow(ctx context.Context, statement string, args ...interface{}) (Row, error)
+	Transactioner
+}
+
+type Transactioner interface {
 	Commit(ctx context.Context)
-	NewTx(ctx context.Context) (pgx.Tx, error)
 	Rollback(ctx context.Context)
+	NewTx(ctx context.Context) (pgx.Tx, error)
 }
 
 type Rows interface {
