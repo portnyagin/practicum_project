@@ -8,7 +8,7 @@ import (
 )
 
 type AppConfig struct {
-	ServerAddress         string `env:"RUN_ADDRESS" envDefault:":8080"`
+	ServerAddress         string `env:"RUN_ADDRESS" envDefault:"localhost:8080"`
 	DatabaseDSN           string `env:"DATABASE_URI" envDefault:"postgresql://practicum_project:practicum_project@127.0.0.1:5432/mdb"`
 	AccrualServiceAddress string `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:"http://localhost:3000"`
 	Reinit                bool   `env:"REINIT" envDefault:"false"`

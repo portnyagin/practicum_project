@@ -5,7 +5,6 @@ import (
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"go.uber.org/zap"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -32,21 +31,13 @@ func (c *GophermartClient) ProcessRequest(ctx context.Context, orderNum string) 
 	c.log.Debug("GophermartClient: ", zap.String("serviceAddress", c.serviceAddress))
 	address := c.serviceAddress + GophermartClientURL + orderNum
 	if c.serviceAddress == ":8080" {
-		address = "localhost" + address
+		address = "http://localhost" + address
+	} else if c.serviceAddress == "localhost:8080" {
+		address = "http://" + address
 	}
-	u, err := url.Parse(address)
-	if err != nil {
-		c.log.Error("GophermartClient: ProcessRequest. Can't build url", zap.Error(err))
-		return false
-	}
-	if u.Scheme != "http" {
-		u.Scheme = "http"
-	}
-	if u.Host == "" {
-		u.Host = "localhost"
-	}
-	c.log.Debug("GophermartClient: ", zap.String("url", u.String()))
-	req, err := http.NewRequest("POST", u.String(), nil)
+
+	c.log.Debug("GophermartClient: ", zap.String("url", address))
+	req, err := http.NewRequest("POST", address, nil)
 	if err != nil {
 		c.log.Error("GophermartClient: ProcessRequest. Can't build request", zap.Error(err))
 		return false
