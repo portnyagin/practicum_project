@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/model"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
@@ -29,7 +28,7 @@ func NewUserRepository(dbHandler basedbhandler.DBHandler, log *infrastructure.Lo
 
 func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass string) (int, error) {
 	var userID int
-	row, err := ur.h.QueryRow(ctx, query.GetNextUserID)
+	row, err := ur.h.QueryRow(ctx, GetNextUserID)
 	if err != nil {
 		ur.l.Error("UserRepository: cannt get userID")
 		return 0, err
@@ -40,12 +39,12 @@ func (ur *UserRepositoryImpl) Save(ctx context.Context, login string, pass strin
 		return 0, err
 	}
 
-	err = ur.h.Execute(ctx, query.CreateUser, userID, login, pass)
+	err = ur.h.Execute(ctx, CreateUser, userID, login, pass)
 	if err != nil {
 		ur.l.Error("UserRepository: cannt create user", zap.Error(err))
 		return 0, err
 	}
-	err = ur.h.Execute(ctx, query.CreateAccount, userID)
+	err = ur.h.Execute(ctx, CreateAccount, userID)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == pgerrcode.UniqueViolation {
@@ -68,7 +67,7 @@ func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass stri
 		ur.l.Info("UserRepository: empty pass authorization  attempt")
 		return false, errors.New("pass cannot be empty")
 	}
-	row, err := ur.h.QueryRow(ctx, query.CheckUser, login, pass)
+	row, err := ur.h.QueryRow(ctx, CheckUser, login, pass)
 	if err != nil {
 		return false, err
 	}
@@ -82,7 +81,7 @@ func (ur *UserRepositoryImpl) Check(ctx context.Context, login string, pass stri
 
 func (ur *UserRepositoryImpl) GetUserByLogin(ctx context.Context, login string) (*model.User, error) {
 
-	row, err := ur.h.QueryRow(ctx, query.GetUserByLogin, login)
+	row, err := ur.h.QueryRow(ctx, GetUserByLogin, login)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package query
+package repository
 
 const CreateOrder = "INSERT INTO orders \n" +
 	"(id, user_id, num, status, upload_at, updated_at) \n" +

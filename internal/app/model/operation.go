@@ -8,7 +8,7 @@ type Operation struct {
 	OrderID       int
 	OrderNum      string
 	OperationType string
-	Amount        int
+	Amount        float32
 	ProcessedAt   time.Time
 }
 

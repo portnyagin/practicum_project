@@ -1,4 +1,4 @@
-package query
+package repository
 
 const CreateOperation = "INSERT INTO practicum_ut.operations \n" +
 	"(id, account_id, order_id,order_num, operation_type, amount, processed_at) \n" +

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/model"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
@@ -26,17 +25,17 @@ func NewBalanceRepository(dbHandler basedbhandler.DBHandler, log *infrastructure
 }
 
 func (r *BalanceRepository) FindWithdrawalByUser(ctx context.Context, userID int) ([]model.Withdrawal, error) {
-	rows, err := r.h.Query(ctx, query.GetWithdrawalByUser, userID)
+	rows, err := r.h.Query(ctx, GetWithdrawalByUser, userID)
 	var resArray []model.Withdrawal
 	if err != nil {
-		r.l.Error("BalanceRepository: request error", zap.String("query", query.GetWithdrawalByUser), zap.Int("userID", userID), zap.Error(err))
+		r.l.Error("BalanceRepository: request error", zap.String("query", GetWithdrawalByUser), zap.Int("userID", userID), zap.Error(err))
 		return nil, err
 	}
 	for rows.Next() {
 		var o model.Withdrawal
 		err := rows.Scan(&o.OrderNum, &o.Amount, &o.Status, &o.ProcessedAt)
 		if err != nil {
-			r.l.Error("BalanceRepository: scan rows error", zap.String("query", query.GetWithdrawalByUser), zap.Int("userID", userID), zap.Error(err))
+			r.l.Error("BalanceRepository: scan rows error", zap.String("query", GetWithdrawalByUser), zap.Int("userID", userID), zap.Error(err))
 			break
 		}
 		resArray = append(resArray, o)
@@ -45,7 +44,7 @@ func (r *BalanceRepository) FindWithdrawalByUser(ctx context.Context, userID int
 }
 
 func (r *BalanceRepository) LockAccount(ctx context.Context, userID int) (*model.Account, error) {
-	row, err := r.h.QueryRow(ctx, query.GetAccountForUpdate, userID)
+	row, err := r.h.QueryRow(ctx, GetAccountForUpdate, userID)
 	if err != nil {
 		r.l.Error("BalanceRepository: cannt get account for update", zap.Error(err))
 		return nil, err
@@ -65,7 +64,7 @@ func (r *BalanceRepository) LockAccount(ctx context.Context, userID int) (*model
 }
 
 func (r *BalanceRepository) SaveAccount(ctx context.Context, account *model.Account) error {
-	err := r.h.Execute(ctx, query.UpdateAccountForUser, account.UserID, account.Balance, account.Debit, account.Credit)
+	err := r.h.Execute(ctx, UpdateAccountForUser, account.UserID, account.Balance, account.Debit, account.Credit)
 	if err != nil {
 		r.l.Error("UserRepository: cannt create user", zap.Error(err))
 		return err
@@ -74,7 +73,7 @@ func (r *BalanceRepository) SaveAccount(ctx context.Context, account *model.Acco
 }
 
 func (r *BalanceRepository) CreateOperation(ctx context.Context, operation *model.Operation) error {
-	err := r.h.Execute(ctx, query.CreateOperation,
+	err := r.h.Execute(ctx, CreateOperation,
 		operation.AccountID,
 		operation.OrderID,
 		operation.OrderNum,
@@ -89,7 +88,7 @@ func (r *BalanceRepository) CreateOperation(ctx context.Context, operation *mode
 }
 
 func (r *BalanceRepository) GetAccount(ctx context.Context, userID int) (*model.Account, error) {
-	row, err := r.h.QueryRow(ctx, query.GetAccount, userID)
+	row, err := r.h.QueryRow(ctx, GetAccount, userID)
 	if err != nil {
 		r.l.Error("BalanceRepository: cannt get account for update", zap.Error(err))
 		return nil, err

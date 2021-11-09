@@ -16,7 +16,7 @@ type BalanceRepository interface {
 
 type Withdrawal struct {
 	OrderNum    string
-	Amount      int
+	Amount      float32
 	Status      string
 	ProcessedAt time.Time
 }

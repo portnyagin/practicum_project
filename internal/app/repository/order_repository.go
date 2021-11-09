@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/model"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
@@ -28,7 +27,7 @@ func NewOrderRepository(dbHandler basedbhandler.DBHandler, log *infrastructure.L
 }
 
 func (r *OrderRepositoryImpl) Save(ctx context.Context, order *model.Order) error {
-	err := r.h.Execute(ctx, query.CreateOrder, order.UserID, order.Num, order.Status, order.UploadAt, order.UpdatedAt)
+	err := r.h.Execute(ctx, CreateOrder, order.UserID, order.Num, order.Status, order.UploadAt, order.UpdatedAt)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == pgerrcode.UniqueViolation {
@@ -40,9 +39,9 @@ func (r *OrderRepositoryImpl) Save(ctx context.Context, order *model.Order) erro
 
 func (r *OrderRepositoryImpl) GetByID(ctx context.Context, orderID int) (*model.Order, error) {
 	var res model.Order
-	row, err := r.h.QueryRow(ctx, query.GetOrderByID, orderID)
+	row, err := r.h.QueryRow(ctx, GetOrderByID, orderID)
 	if err != nil {
-		r.l.Error("OrderRepository: request error", zap.String("query", query.GetOrderByID), zap.Int("orderID", orderID), zap.Error(err))
+		r.l.Error("OrderRepository: request error", zap.String("query", GetOrderByID), zap.Int("orderID", orderID), zap.Error(err))
 		return nil, err
 	}
 	err = row.Scan(&res.ID, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
@@ -50,7 +49,7 @@ func (r *OrderRepositoryImpl) GetByID(ctx context.Context, orderID int) (*model.
 		return nil, &model.NoRowFound
 	}
 	if err != nil {
-		r.l.Error("OrderRepository: scan rows error", zap.String("query", query.GetOrderByID), zap.Int("orderID", orderID), zap.Error(err))
+		r.l.Error("OrderRepository: scan rows error", zap.String("query", GetOrderByID), zap.Int("orderID", orderID), zap.Error(err))
 		return nil, err
 	}
 	return &res, nil
@@ -58,9 +57,9 @@ func (r *OrderRepositoryImpl) GetByID(ctx context.Context, orderID int) (*model.
 
 func (r *OrderRepositoryImpl) GetByNum(ctx context.Context, num string) (*model.Order, error) {
 	var res model.Order
-	row, err := r.h.QueryRow(ctx, query.GetOrderByNum, num)
+	row, err := r.h.QueryRow(ctx, GetOrderByNum, num)
 	if err != nil {
-		r.l.Error("OrderRepository: request error", zap.String("query", query.GetOrderByNum), zap.String("Num", num), zap.Error(err))
+		r.l.Error("OrderRepository: request error", zap.String("query", GetOrderByNum), zap.String("Num", num), zap.Error(err))
 		return nil, err
 	}
 	err = row.Scan(&res.ID, &res.UserID, &res.Num, &res.Status, &res.UploadAt, &res.UpdatedAt)
@@ -68,23 +67,23 @@ func (r *OrderRepositoryImpl) GetByNum(ctx context.Context, num string) (*model.
 		return nil, &model.NoRowFound
 	}
 	if err != nil {
-		r.l.Error("OrderRepository: scan rows error", zap.String("query", query.GetOrderByNum), zap.String("Num", num), zap.Error(err))
+		r.l.Error("OrderRepository: scan rows error", zap.String("query", GetOrderByNum), zap.String("Num", num), zap.Error(err))
 		return nil, err
 	}
 	return &res, nil
 }
 
 func (r *OrderRepositoryImpl) UpdateStatus(ctx context.Context, userID int, num string, statusNew string) error {
-	err := r.h.Execute(ctx, query.UpdateOrderStatus, userID, num, statusNew)
+	err := r.h.Execute(ctx, UpdateOrderStatus, userID, num, statusNew)
 	return err
 }
 
 func (r *OrderRepositoryImpl) FindByUser(ctx context.Context, userID int) ([]model.Order, error) {
-	rows, err := r.h.Query(ctx, query.FindOrdersByUser, userID)
+	rows, err := r.h.Query(ctx, FindOrdersByUser, userID)
 	var resArray []model.Order
 
 	if err != nil {
-		r.l.Error("OrderRepository: request error", zap.String("query", query.FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
+		r.l.Error("OrderRepository: request error", zap.String("query", FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
 		return nil, err
 	}
 
@@ -92,7 +91,7 @@ func (r *OrderRepositoryImpl) FindByUser(ctx context.Context, userID int) ([]mod
 		var o model.Order
 		err := rows.Scan(&o.ID, &o.Num, &o.UserID, &o.Status, &o.UploadAt, &o.UpdatedAt)
 		if err != nil {
-			r.l.Error("OrderRepository: scan rows error", zap.String("query", query.FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
+			r.l.Error("OrderRepository: scan rows error", zap.String("query", FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
 			break
 		}
 		resArray = append(resArray, o)
@@ -102,7 +101,7 @@ func (r *OrderRepositoryImpl) FindByUser(ctx context.Context, userID int) ([]mod
 
 func (r *OrderRepositoryImpl) LockOrder(ctx context.Context, OrderNum string) (*model.Order, error) {
 	var res model.Order
-	row, err := r.h.QueryRow(ctx, query.GetOrderByNumForUpdate, OrderNum)
+	row, err := r.h.QueryRow(ctx, GetOrderByNumForUpdate, OrderNum)
 	if err != nil {
 		r.l.Error("OrderRepository: can't get order for update", zap.Error(err))
 		return nil, err
@@ -122,18 +121,17 @@ func (r *OrderRepositoryImpl) LockOrder(ctx context.Context, OrderNum string) (*
 
 func (r *OrderRepositoryImpl) FindNotProcessed(ctx context.Context) ([]model.Order, error) {
 	const rowCountLimit = 20
-	rows, err := r.h.Query(ctx, query.FindOrderByStatuses, model.OrderStatusProcessing, model.OrderStatusNew, model.OrderStatusRegistered, "", "", rowCountLimit)
+	rows, err := r.h.Query(ctx, FindOrderByStatuses, model.OrderStatusProcessing, model.OrderStatusNew, model.OrderStatusRegistered, "", "", rowCountLimit)
 	var resArray []model.Order
 	if err != nil {
-		r.l.Error("OrderRepository: request error", zap.String("query", query.FindOrderByStatuses), zap.Error(err))
+		r.l.Error("OrderRepository: request error", zap.String("query", FindOrderByStatuses), zap.Error(err))
 		return nil, err
 	}
-
 	for rows.Next() {
 		var o model.Order
-		err := rows.Scan(&o.ID, &o.Num, &o.UserID, &o.Status, &o.UploadAt, &o.UpdatedAt)
+		err := rows.Scan(&o.ID, &o.UserID, &o.Num, &o.Status, &o.UploadAt, &o.UpdatedAt)
 		if err != nil {
-			r.l.Error("OrderRepository: scan rows error", zap.String("query", query.FindOrderByStatuses), zap.Error(err))
+			r.l.Error("OrderRepository: scan rows error", zap.String("query", FindOrderByStatuses), zap.Error(err))
 			break
 		}
 		resArray = append(resArray, o)

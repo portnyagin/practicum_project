@@ -1,4 +1,4 @@
-package query
+package repository
 
 const CreateUser = "INSERT INTO users " +
 	"( id, login, pass) \n" +

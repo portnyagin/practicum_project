@@ -1,4 +1,4 @@
-package query
+package repository
 
 const CreateAccount = "INSERT INTO accounts (id, user_id) VALUES(nextval('seq_account'), $1);"
 
