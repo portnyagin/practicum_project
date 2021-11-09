@@ -37,10 +37,10 @@ const createOperations = "create table if not exists operations (\n" +
 	"id numeric primary key,\n" +
 	"account_id numeric not null,\n" +
 	"order_id numeric not null,\n" +
-	"order_num numeric not null,\n" +
+	"order_num string not null,\n" +
 	"operation_type varchar not null ,\n" +
 	"amount numeric not null,\n" +
-	"processed_at numeric not null\n" +
+	"processed_at timestamp with time zone  not null\n" +
 	");\n" +
 	"" +
 	"create sequence if not exists seq_operation increment by 1 no minvalue no maxvalue start with 1 cache 10 owned by operations.id;\n" +
