@@ -30,6 +30,9 @@ func NewGophermartClient(serviceAddress string, log *infrastructure.Logger) *Gop
 
 func (c *GophermartClient) ProcessRequest(ctx context.Context, orderNum string) bool {
 	address := c.serviceAddress + GophermartClientURL + orderNum
+	if c.serviceAddress == ":8080" {
+		address = "localhost" + address
+	}
 	u, err := url.Parse(address)
 	if err != nil {
 		c.log.Error("GophermartClient: ProcessRequest. Can't build url", zap.Error(err))
