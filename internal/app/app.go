@@ -86,7 +86,7 @@ func Start() {
 	protectedOrderRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, orderHandler, logger)
 	protectedBalanceRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, balanceHandler, logger)
 
-	go accrualService.StartProcessJob(5)
+	go accrualService.StartProcessJob(1)
 	err = http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {
 		fmt.Println("can't start service")
