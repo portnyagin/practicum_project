@@ -44,7 +44,7 @@ func (h *AccrualHandler) ProcessOrder(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if err = WriteResponse(w, http.StatusCreated, ""); err != nil {
+	if err = WriteResponse(w, http.StatusCreated, nil); err != nil {
 		h.log.Error("AccrualHandler: can't write response", zap.Error(err))
 	}
 }

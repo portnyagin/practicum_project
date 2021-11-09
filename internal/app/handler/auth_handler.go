@@ -87,7 +87,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, jwtCookie)
-	if err = WriteResponse(w, http.StatusOK, ""); err != nil {
+	if err = WriteResponse(w, http.StatusOK, nil); err != nil {
 		h.log.Error("AuthHandler: can't write response", zap.Error(err))
 		return
 	}
@@ -154,7 +154,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, jwtCookie)
-	if err = WriteResponse(w, http.StatusOK, ""); err != nil {
+	if err = WriteResponse(w, http.StatusOK, nil); err != nil {
 		h.log.Error("AuthHandler: can't write response", zap.Error(err))
 		return
 	}

@@ -130,7 +130,7 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if err = WriteResponse(w, http.StatusOK, ""); err != nil {
+	if err = WriteResponse(w, http.StatusOK, nil); err != nil {
 		h.log.Error("BalanceHandler: can't write response", zap.Error(err))
 	}
 	h.log.Info("Withdraw success", zap.String("OrderNum", withdraw.OrderNum), zap.Int("userID", userID))
@@ -157,7 +157,15 @@ func (h *BalanceHandler) GetWithdrawalsList(w http.ResponseWriter, r *http.Reque
 			h.log.Error("BalanceHandler: can't write response", zap.Error(err))
 		}
 	} else {
-		if err = WriteResponse(w, http.StatusOK, res); err != nil {
+		responseBody, err := json.Marshal(res)
+		if err != nil {
+			h.log.Error("BalanceHandler: can't serialize response", zap.Error(err))
+			if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
+				h.log.Error("BalanceHandler: can't write response", zap.Error(err))
+			}
+			return
+		}
+		if err = WriteResponse(w, http.StatusOK, responseBody); err != nil {
 			h.log.Error("BalanceHandler: can't write response", zap.Error(err))
 		}
 	}

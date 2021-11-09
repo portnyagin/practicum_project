@@ -9,18 +9,22 @@ import (
 	"net/http"
 )
 
-func ErrMessage(msg string) dto.Error {
-	return dto.Error{Msg: msg}
+func ErrMessage(msg string) []byte {
+	b, err := json.Marshal(dto.Error{Msg: msg})
+	if err != nil {
+		return nil
+	}
+	return b
 }
 
-func WriteResponse(w http.ResponseWriter, status int, message interface{}) error {
+func WriteResponse(w http.ResponseWriter, status int, message []byte) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	b, err := json.Marshal(message)
+	/*b, err := json.Marshal(message)
 	if err != nil {
 		return err
-	}
-	_, err = w.Write(b)
+	}*/
+	_, err := w.Write(message)
 	if err != nil {
 		panic("Can't write response")
 	}
