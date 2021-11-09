@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	cfg "github.com/portnyagin/practicum_project/internal/app/config"
 	"github.com/portnyagin/practicum_project/internal/app/handler"
+	"github.com/portnyagin/practicum_project/internal/app/infrastructure/client"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure/postgres"
 	"github.com/portnyagin/practicum_project/internal/app/repository"
 	"github.com/portnyagin/practicum_project/internal/app/service"
@@ -16,6 +17,7 @@ import (
 
 func Start() {
 	logger, err := zap.NewDevelopment()
+	//logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
@@ -75,10 +77,16 @@ func Start() {
 	balanceHandler := handler.NewBalanceHandler(balanceService, auth, logger)
 	router := chi.NewRouter()
 
-	publicRoutes(router, authHandler, postgresHandlerTx, logger)
+	accrualClient := client.NewAccrualClient(config.AccrualServiceAddress, logger)
+	gophermartClient := client.NewGophermartClient(config.ServerAddress, logger)
+	accrualService := service.NewAccrualService(orderRepository, balanceRepository, accrualClient, gophermartClient, logger)
+	accrualHandler := handler.NewAccrualHandler(accrualService, logger)
+
+	publicRoutes(router, authHandler, accrualHandler, postgresHandlerTx, logger)
 	protectedOrderRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, orderHandler, logger)
 	protectedBalanceRoutes(router, auth.GetJWTAuth(), postgresHandlerTx, balanceHandler, logger)
 
+	go accrualService.StartProcessJob(5)
 	err = http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {
 		fmt.Println("can't start service")

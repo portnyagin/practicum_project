@@ -13,6 +13,7 @@ import (
 func publicRoutes(
 	r chi.Router,
 	handler *handler.AuthHandler,
+	accrual *handler.AccrualHandler,
 	postgresHandlerTx *postgres.PostgresqlHandlerTX,
 	log *infrastructure.Logger,
 ) {
@@ -23,6 +24,7 @@ func publicRoutes(
 		router.Use(mymiddleware.Transactional(postgresHandlerTx, log))
 		router.Post("/api/user/register", handler.Register)
 		router.Post("/api/user/login", handler.Login)
+		router.Post("/api/accrual/process/{orderNum}", accrual.ProcessOrder)
 	})
 }
 
