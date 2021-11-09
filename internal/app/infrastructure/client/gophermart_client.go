@@ -29,6 +29,7 @@ func NewGophermartClient(serviceAddress string, log *infrastructure.Logger) *Gop
 }
 
 func (c *GophermartClient) ProcessRequest(ctx context.Context, orderNum string) bool {
+	c.log.Debug("GophermartClient: ", zap.String("serviceAddress", c.serviceAddress))
 	address := c.serviceAddress + GophermartClientURL + orderNum
 	if c.serviceAddress == ":8080" {
 		address = "localhost" + address
@@ -44,7 +45,7 @@ func (c *GophermartClient) ProcessRequest(ctx context.Context, orderNum string) 
 	if u.Host == "" {
 		u.Host = "localhost"
 	}
-
+	c.log.Debug("GophermartClient: ", zap.String("url", u.String()))
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		c.log.Error("GophermartClient: ProcessRequest. Can't build request", zap.Error(err))
