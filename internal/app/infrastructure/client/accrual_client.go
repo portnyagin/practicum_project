@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -32,8 +33,21 @@ func NewAccrualClient(serviceAddress string, log *infrastructure.Logger) *Accrua
 }
 
 func (c *AccrualClient) GetAccrual(ctx context.Context, orderNum string) (*dto.Accrual, error) {
-	url := c.serviceAddress + AccrualClientURL + orderNum
-	req, err := http.NewRequest("GET", url, nil)
+	address := c.serviceAddress + AccrualClientURL + orderNum
+
+	u, err := url.Parse(address)
+	if err != nil {
+		c.log.Error("AccrualClient: GetAccrual. Can't build url", zap.Error(err))
+		return nil, err
+	}
+	if u.Scheme != "http" {
+		u.Scheme = "http"
+	}
+	if u.Host == "" {
+		u.Host = "localhost"
+	}
+
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		c.log.Error("AccrualClient: GetAccrual. Can't build request", zap.Error(err))
 		return nil, err
