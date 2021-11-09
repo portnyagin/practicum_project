@@ -37,7 +37,7 @@ const createOperations = "create table if not exists operations (\n" +
 	"id numeric primary key,\n" +
 	"account_id numeric not null,\n" +
 	"order_id numeric not null,\n" +
-	"order_num string not null,\n" +
+	"order_num varchar not null,\n" +
 	"operation_type varchar not null ,\n" +
 	"amount numeric not null,\n" +
 	"processed_at timestamp with time zone  not null\n" +
