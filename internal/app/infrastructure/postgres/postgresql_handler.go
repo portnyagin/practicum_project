@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
+	"time"
 )
 
 type PostgresqlHandler struct {
@@ -14,6 +15,26 @@ type PostgresqlHandler struct {
 
 type PostgressRow struct {
 	Rows *pgx.Row
+}
+
+func NewPostgresqlHandler(ctx context.Context, dataSource string) (*PostgresqlHandler, error) {
+	// Format DSN
+	//("postgresql://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Dbname)
+	poolConfig, err := pgxpool.ParseConfig(dataSource)
+	if err != nil {
+		return nil, err
+	}
+	poolConfig.MaxConns = 5
+	poolConfig.MinConns = 2
+	poolConfig.MaxConnIdleTime = time.Second * 120
+	pool, err := pgxpool.ConnectConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, err
+	}
+	postgresqlHandler := new(PostgresqlHandler)
+	postgresqlHandler.pool = pool
+	//baseHandler.ErrNotFound = pgx.ErrNoRows
+	return postgresqlHandler, nil
 }
 
 func (handler *PostgresqlHandler) Execute(ctx context.Context, statement string, args ...interface{}) error {
@@ -94,21 +115,4 @@ func (handler *PostgresqlHandler) Close() {
 	if handler != nil {
 		handler.pool.Close()
 	}
-}
-
-func NewPostgresqlHandler(ctx context.Context, dataSource string) (*PostgresqlHandler, error) {
-	// Format DSN
-	//("postgresql://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Dbname)
-	poolConfig, err := pgxpool.ParseConfig(dataSource)
-	if err != nil {
-		return nil, err
-	}
-	pool, err := pgxpool.ConnectConfig(ctx, poolConfig)
-	if err != nil {
-		return nil, err
-	}
-	postgresqlHandler := new(PostgresqlHandler)
-	postgresqlHandler.pool = pool
-	//baseHandler.ErrNotFound = pgx.ErrNoRows
-	return postgresqlHandler, nil
 }

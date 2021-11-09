@@ -10,6 +10,7 @@ import (
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
 	"go.uber.org/zap"
+	"time"
 )
 
 type PostgresqlHandlerTX struct {
@@ -24,6 +25,10 @@ func NewPostgresqlHandlerTX(ctx context.Context, dataSource string, log *infrast
 	if err != nil {
 		return nil, err
 	}
+
+	poolConfig.MaxConns = 5
+	poolConfig.MinConns = 2
+	poolConfig.MaxConnIdleTime = time.Second * 120
 	pool, err := pgxpool.ConnectConfig(ctx, poolConfig)
 	if err != nil {
 		return nil, err
@@ -35,12 +40,7 @@ func NewPostgresqlHandlerTX(ctx context.Context, dataSource string, log *infrast
 }
 
 func (handler *PostgresqlHandlerTX) NewTx(ctx context.Context) (pgx.Tx, error) {
-	// TODO: не будет ли тут утечки? Надо ли сессию возвращать в пул?
-	conn, err := handler.pool.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return conn.Begin(ctx)
+	return handler.pool.Begin(ctx)
 }
 
 func (handler *PostgresqlHandlerTX) getTx(ctx context.Context) (tx pgx.Tx, err error) {
@@ -60,18 +60,26 @@ func (handler *PostgresqlHandlerTX) getTx(ctx context.Context) (tx pgx.Tx, err e
 	return tx, err
 }
 
-func (handler *PostgresqlHandlerTX) Commit(ctx context.Context) {
+func (handler *PostgresqlHandlerTX) Commit(ctx context.Context) error {
+	handler.log.Debug("connection pool stat(before commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	tx, err := handler.getTx(ctx)
 	if err == nil {
 		tx.Commit(ctx)
 	}
+
+	handler.pool.Stat()
+	handler.log.Debug("connection pool stat(after commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	return err
 }
 
-func (handler *PostgresqlHandlerTX) Rollback(ctx context.Context) {
+func (handler *PostgresqlHandlerTX) Rollback(ctx context.Context) error {
+	handler.log.Debug("connection pool stat(before rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	tx, err := handler.getTx(ctx)
 	if err == nil {
 		tx.Rollback(ctx)
 	}
+	handler.log.Debug("connection pool stat(after rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	return err
 }
 
 func (handler *PostgresqlHandlerTX) Execute(ctx context.Context, statement string, args ...interface{}) error {

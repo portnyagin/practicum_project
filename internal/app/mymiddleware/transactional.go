@@ -21,7 +21,6 @@ func (w *statusWriter) WriteHeader(status int) {
 func Transactional(handler basedbhandler.Transactioner, log *zap.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("start transaction")
 			tx, err := handler.NewTx(context.Background())
 			if err != nil {
 				log.Error("TransactionMiddleware: can't start transaction", zap.Error(err))
@@ -39,13 +38,11 @@ func Transactional(handler basedbhandler.Transactioner, log *zap.Logger) func(ht
 			sw := statusWriter{ResponseWriter: w}
 			next.ServeHTTP(&sw, r.WithContext(ctx))
 			if sw.status > http.StatusNoContent {
-				fmt.Println("rollback transaction")
-				if err := tx.Rollback(ctx); err != nil {
+				if err := handler.Rollback(ctx); err != nil {
 					log.Error("TransactionMiddleware: Can't commit", zap.Error(err))
 				}
 			} else {
-				fmt.Println("commit transaction")
-				if err := tx.Commit(ctx); err != nil {
+				if err := handler.Commit(ctx); err != nil {
 					log.Error("TransactionMiddleware: Can't rollback", zap.Error(err))
 				}
 			}

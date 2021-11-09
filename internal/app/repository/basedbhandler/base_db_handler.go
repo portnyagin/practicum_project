@@ -23,8 +23,8 @@ type TransactionalDBHandler interface {
 }
 
 type Transactioner interface {
-	Commit(ctx context.Context)
-	Rollback(ctx context.Context)
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
 	NewTx(ctx context.Context) (pgx.Tx, error)
 }
 
