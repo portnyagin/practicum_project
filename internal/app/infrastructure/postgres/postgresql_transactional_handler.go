@@ -61,24 +61,24 @@ func (handler *PostgresqlHandlerTX) getTx(ctx context.Context) (tx pgx.Tx, err e
 }
 
 func (handler *PostgresqlHandlerTX) Commit(ctx context.Context) error {
-	handler.log.Debug("connection pool stat(before commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	//handler.log.Debug("connection pool stat(before commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	tx, err := handler.getTx(ctx)
 	if err == nil {
 		tx.Commit(ctx)
 	}
 
 	handler.pool.Stat()
-	handler.log.Debug("connection pool stat(after commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	//handler.log.Debug("connection pool stat(after commit)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	return err
 }
 
 func (handler *PostgresqlHandlerTX) Rollback(ctx context.Context) error {
-	handler.log.Debug("connection pool stat(before rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	//handler.log.Debug("connection pool stat(before rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	tx, err := handler.getTx(ctx)
 	if err == nil {
 		tx.Rollback(ctx)
 	}
-	handler.log.Debug("connection pool stat(after rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
+	//handler.log.Debug("connection pool stat(after rollback)", zap.Int32("AcquiredConns", handler.pool.Stat().AcquiredConns()))
 	return err
 }
 

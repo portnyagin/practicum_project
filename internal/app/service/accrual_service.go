@@ -69,7 +69,7 @@ func (s *AccrualService) process(ctx context.Context) {
 }
 
 func (s *AccrualService) ProcessOrder(ctx context.Context, orderNum string) error {
-
+	s.log.Debug("AccrualService: processOrder. Request")
 	accrual, err := s.accrualClient.GetAccrual(ctx, orderNum)
 	if err != nil {
 		s.log.Error("AccrualService: processOrder. Can't get accruals from remote service", zap.Error(err))
@@ -112,5 +112,6 @@ func (s *AccrualService) ProcessOrder(ctx context.Context, orderNum string) erro
 		s.log.Error("AccrualService: processOrder. Recieved unexpected status", zap.String("OrderNum", order.Num), zap.String("Status", accrual.Status))
 		return errors.New("recieved unexpected status")
 	}
+	s.log.Debug("AccrualService: processOrder. Success")
 	return nil
 }
