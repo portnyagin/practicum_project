@@ -136,6 +136,7 @@ func (h *OrderHandler) GetOrderList(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		responseBody, err := json.Marshal(res)
+		h.log.Debug("/api/user/orders result", zap.String("dto", string(responseBody)))
 		if err != nil {
 			h.log.Error("OrderHandler: can't serialize response", zap.Error(err))
 			return
