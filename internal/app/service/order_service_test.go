@@ -92,7 +92,7 @@ func TestOrderService_Save(t *testing.T) {
 	defer mockCtrl.Finish()
 	ctx := context.Background()
 	orderRepository := mocks.NewMockOrderRepository(mockCtrl)
-	target := NewOrderService(orderRepository, log)
+	target := NewOrderService(orderRepository, log, false)
 	orderRepository.EXPECT().GetByNum(ctx, "Case 3").Return(&model.Order{Num: "Case 3", UserID: 3}, nil)
 	orderRepository.EXPECT().GetByNum(ctx, "Case 4").Return(&model.Order{Num: "Case 4", UserID: 30}, nil)
 	orderRepository.EXPECT().GetByNum(ctx, "Case 5").Return(nil, errors.New("any error"))
@@ -157,7 +157,7 @@ func TestOrderService_Save2(t *testing.T) {
 	defer mockCtrl.Finish()
 	ctx := context.Background()
 	orderRepository := mocks.NewMockOrderRepository(mockCtrl)
-	target := NewOrderService(orderRepository, log)
+	target := NewOrderService(orderRepository, log, false)
 
 	orderRepository.EXPECT().GetByNum(ctx, gomock.Any()).Return(nil, &model.NoRowFound).AnyTimes()
 	orderRepository.EXPECT().Save(ctx, gomock.Any()).DoAndReturn(

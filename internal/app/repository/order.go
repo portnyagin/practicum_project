@@ -5,8 +5,8 @@ const CreateOrder = "INSERT INTO orders \n" +
 	"VALUES(nextval('seq_order'),  $1, $2, $3, $4,$5);"
 
 const UpdateOrderStatus = "UPDATE orders \n" +
-	"SET  status=$3, updated_at=CURRENT_TIMESTAMP \n" +
-	"where user_id=$1 and num =$2 and status!=$3;"
+	"SET  status=$2, updated_at=$3 \n" +
+	"where id=$1  and status!=$2;"
 
 const FindOrdersByUser = "select id, num,user_id, status, upload_at, updated_at from orders where user_id = $1;"
 

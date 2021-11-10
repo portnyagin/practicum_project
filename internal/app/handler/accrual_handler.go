@@ -41,6 +41,7 @@ func (h *AccrualHandler) ProcessOrder(w http.ResponseWriter, r *http.Request) {
 		h.log.Error("AccrualHandler:internal service error", zap.String("RequestURI", r.RequestURI), zap.Error(err))
 		if err := WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
 			h.log.Error("OrderHandler: can't write response", zap.Error(err))
+
 		}
 		return
 	}

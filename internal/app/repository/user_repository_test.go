@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/portnyagin/practicum_project/internal/app/database/query"
 	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler/mocks"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -36,9 +35,9 @@ func TestUserRepository_Save(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			postgresHandler.EXPECT().Execute(context.Background(), query.CreateUser, gomock.Any(), tt.args.login, tt.args.pass).Return(nil)
-			postgresHandler.EXPECT().Execute(context.Background(), query.CreateAccount, gomock.Any()).Return(nil)
-			postgresHandler.EXPECT().QueryRow(context.Background(), query.GetNextUserID).Return(checkRow, nil)
+			postgresHandler.EXPECT().Execute(context.Background(), CreateUser, gomock.Any(), tt.args.login, tt.args.pass).Return(nil)
+			postgresHandler.EXPECT().Execute(context.Background(), CreateAccount, gomock.Any()).Return(nil)
+			postgresHandler.EXPECT().QueryRow(context.Background(), GetNextUserID).Return(checkRow, nil)
 			userID, err := target.Save(context.Background(), tt.args.login, tt.args.pass)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository Save() error = %v, wantErr %v", err, tt.wantErr)
@@ -92,8 +91,8 @@ func TestUserRepository_Check(t *testing.T) {
 
 	mockPostgresHandler := mocks.NewMockDBHandler(mockCtrl)
 
-	mockPostgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 22", "pass").Return(checkRow, nil)
-	mockPostgresHandler.EXPECT().QueryRow(context.Background(), query.CheckUser, "login 23", gomock.Any()).Return(emptyRow, nil)
+	mockPostgresHandler.EXPECT().QueryRow(context.Background(), CheckUser, "login 22", "pass").Return(checkRow, nil)
+	mockPostgresHandler.EXPECT().QueryRow(context.Background(), CheckUser, "login 23", gomock.Any()).Return(emptyRow, nil)
 
 	target, _ := NewUserRepository(mockPostgresHandler, Log)
 	//initDatabase(context.Background(), postgresHandler)

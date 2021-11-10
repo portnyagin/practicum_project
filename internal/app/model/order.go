@@ -10,7 +10,7 @@ type OrderRepository interface {
 	Save(ctx context.Context, order *Order) error
 	GetByID(ctx context.Context, orderID int) (*Order, error)
 	GetByNum(ctx context.Context, num string) (*Order, error)
-	UpdateStatus(ctx context.Context, userID int, num string, statusNew string) error
+	UpdateStatus(ctx context.Context, order *Order) error
 	FindByUser(ctx context.Context, userID int) ([]Order, error)
 	LockOrder(ctx context.Context, OrderNum string) (*Order, error)
 	FindNotProcessed(ctx context.Context) ([]Order, error)

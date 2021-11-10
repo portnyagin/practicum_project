@@ -24,6 +24,7 @@ type AccrualService struct {
 	accrualClient    AccrualClient
 	gophermartClient GophermartClient
 	log              *infrastructure.Logger
+	enable           bool
 }
 
 func NewAccrualService(
@@ -32,6 +33,7 @@ func NewAccrualService(
 	accrualClient AccrualClient,
 	gophermartClient GophermartClient,
 	log *infrastructure.Logger,
+	enable bool,
 ) *AccrualService {
 	var target AccrualService
 	target.dbOrder = orderRepo
@@ -39,10 +41,14 @@ func NewAccrualService(
 	target.log = log
 	target.accrualClient = accrualClient
 	target.gophermartClient = gophermartClient
+	target.enable = enable
 	return &target
 }
 
 func (s *AccrualService) StartProcessJob(latencyInSec time.Duration) {
+	if !s.enable {
+		return
+	}
 	t := time.NewTicker(latencyInSec * time.Second)
 	defer t.Stop()
 	for true {
@@ -60,17 +66,15 @@ func (s *AccrualService) process(ctx context.Context) {
 		s.log.Error("AccrualService: process. Can't get order list", zap.Error(err))
 		return
 	}
-
 	for _, order := range orderList {
 		s.gophermartClient.ProcessRequest(ctx, order.Num)
 	}
-
 	s.log.Debug("AccrualService: process. Process job finished")
 }
 
 func (s *AccrualService) ProcessOrder(ctx context.Context, orderNum string) error {
 	s.log.Debug("AccrualService: processOrder. Request")
-	accrual, err := s.accrualClient.GetAccrual(ctx, orderNum)
+	accrual, err := s.accrualClient.GetAccrual(context.Background(), orderNum)
 	if err != nil {
 		s.log.Error("AccrualService: processOrder. Can't get accruals from remote service", zap.Error(err))
 		return err
@@ -87,7 +91,6 @@ func (s *AccrualService) ProcessOrder(ctx context.Context, orderNum string) erro
 			s.log.Error("AccrualService: processOrder. Can't lock account", zap.Error(err))
 			return err
 		}
-
 		operation := model.Operation{
 			AccountID:     account.ID,
 			Amount:        accrual.Accrual,
@@ -101,9 +104,21 @@ func (s *AccrualService) ProcessOrder(ctx context.Context, orderNum string) erro
 
 		order.Status = accrual.Status
 		order.UpdatedAt = time.Now().Truncate(time.Second)
-		s.dbBalance.CreateOperation(ctx, &operation)
-		s.dbBalance.SaveAccount(ctx, account)
-		s.dbOrder.Save(ctx, order)
+		err = s.dbBalance.CreateOperation(ctx, &operation)
+		if err != nil {
+			s.log.Error("AccrualService: processOrder. Can't create operation", zap.Error(err))
+			return err
+		}
+		err = s.dbBalance.SaveAccount(ctx, account)
+		if err != nil {
+			s.log.Error("AccrualService: processOrder. Can't save account", zap.Error(err))
+			return err
+		}
+		err = s.dbOrder.UpdateStatus(ctx, order)
+		if err != nil {
+			s.log.Error("AccrualService: processOrder. Can't save order", zap.Error(err))
+			return err
+		}
 	} else if accrual.Status == model.OrderStatusProcessing || accrual.Status == model.OrderStatusRegistered || accrual.Status == model.OrderStatusInvalid {
 		order.Status = accrual.Status
 		order.UpdatedAt = time.Now().Truncate(time.Second)

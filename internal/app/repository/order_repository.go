@@ -73,8 +73,8 @@ func (r *OrderRepositoryImpl) GetByNum(ctx context.Context, num string) (*model.
 	return &res, nil
 }
 
-func (r *OrderRepositoryImpl) UpdateStatus(ctx context.Context, userID int, num string, statusNew string) error {
-	err := r.h.Execute(ctx, UpdateOrderStatus, userID, num, statusNew)
+func (r *OrderRepositoryImpl) UpdateStatus(ctx context.Context, order *model.Order) error {
+	err := r.h.Execute(ctx, UpdateOrderStatus, order.ID, order.Status, order.UpdatedAt)
 	return err
 }
 

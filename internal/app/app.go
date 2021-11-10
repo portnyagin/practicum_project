@@ -69,7 +69,7 @@ func Start() {
 	}
 
 	authService := service.NewAuthService(userRepository, logger)
-	orderService := service.NewOrderService(orderRepository, logger)
+	orderService := service.NewOrderService(orderRepository, logger, config.ValidateOrderNum)
 	balanceService := service.NewBalanceService(balanceRepository, logger)
 	auth := handler.NewAuth("secret")
 	authHandler := handler.NewAuthHandler(authService, auth, logger)
@@ -79,7 +79,7 @@ func Start() {
 
 	accrualClient := client.NewAccrualClient(config.AccrualServiceAddress, logger)
 	gophermartClient := client.NewGophermartClient(config.ServerAddress, logger)
-	accrualService := service.NewAccrualService(orderRepository, balanceRepository, accrualClient, gophermartClient, logger)
+	accrualService := service.NewAccrualService(orderRepository, balanceRepository, accrualClient, gophermartClient, logger, config.EnableAccrual)
 	accrualHandler := handler.NewAccrualHandler(accrualService, logger)
 
 	publicRoutes(router, authHandler, accrualHandler, postgresHandlerTx, logger)
