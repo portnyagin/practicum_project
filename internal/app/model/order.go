@@ -21,6 +21,7 @@ type Order struct {
 	UserID    int
 	Num       string
 	Status    string
+	Accrual   float32
 	UploadAt  time.Time
 	UpdatedAt time.Time
 }

@@ -89,7 +89,7 @@ func (r *OrderRepositoryImpl) FindByUser(ctx context.Context, userID int) ([]mod
 
 	for rows.Next() {
 		var o model.Order
-		err := rows.Scan(&o.ID, &o.Num, &o.UserID, &o.Status, &o.UploadAt, &o.UpdatedAt)
+		err := rows.Scan(&o.ID, &o.Num, &o.UserID, &o.Status, &o.Accrual, &o.UploadAt, &o.UpdatedAt)
 		if err != nil {
 			r.l.Error("OrderRepository: scan rows error", zap.String("query", FindOrdersByUser), zap.Int("userID", userID), zap.Error(err))
 			break
