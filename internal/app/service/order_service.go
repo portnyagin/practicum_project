@@ -79,14 +79,14 @@ func (s *OrderService) Save(ctx context.Context, order *dto.Order) error {
 	modelOrder.UploadAt = time.Now().Truncate(time.Microsecond)
 	modelOrder.UpdatedAt = time.Now().Truncate(time.Microsecond)
 
-	err2 := s.dbOrder.Save(ctx, modelOrder)
-	if err2 != nil {
+	err = s.dbOrder.Save(ctx, modelOrder)
+	if err != nil {
 		s.log.Error("OrderService: Save. Can't save order",
 			zap.Int("userID", order.UserID),
 			zap.String("num", order.Num),
 			zap.Error(err),
 		)
-		return err2
+		return err
 	}
 	return nil
 }
