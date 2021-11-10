@@ -51,7 +51,7 @@ func (s *BalanceService) GetCurrentBalance(ctx context.Context, userID int) (*dt
 
 	return &dto.Balance{
 		Current:   account.Balance,
-		Withdrawn: account.Credit,
+		Withdrawn: account.Debit,
 	}, nil
 
 }

@@ -8,4 +8,5 @@ const GetWithdrawalByUser = "select op.order_num, op.amount, 'PROCESSED' as stat
 	"from operations op, accounts acc \n" +
 	"where \n" +
 	"op.account_id = acc.id \n" +
-	"and acc.user_id  = $1"
+	"and acc.user_id  = $1 \n" +
+	"and operation_type='DEBIT'"
