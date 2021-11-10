@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/portnyagin/practicum_project/internal/app/dto"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
@@ -73,35 +72,36 @@ func (h *OrderHandler) RegisterNewOrder(w http.ResponseWriter, r *http.Request) 
 	}
 	order.UserID = u
 	err = h.orderService.Save(ctx, &order)
+
+	var (
+		statusCode int
+		msg        string
+	)
 	if err != nil {
 		h.log.Error("OrderHandler:recieved an error", zap.Error(err))
-		if errors.Is(err, dto.ErrOrderRegistered) {
-			if err = WriteResponse(w, http.StatusOK, ErrMessage("Номер заказа уже был загружен этим пользователем")); err != nil {
-				h.log.Error("OrderHandler: can't write response", zap.Error(err))
-			}
-			return
-		} else if errors.Is(err, dto.ErrOrderRegisteredByAnotherUser) {
-			if err = WriteResponse(w, http.StatusConflict, ErrMessage("Номер заказа уже был загружен другим пользователем")); err != nil {
-				h.log.Error("OrderHandler: can't write response", zap.Error(err))
-			}
-			return
-		} else if errors.Is(err, dto.ErrBadParam) {
-			if err = WriteResponse(w, http.StatusBadRequest, ErrMessage("Неверный формат номера заказа")); err != nil {
-				h.log.Error("OrderHandler: can't write response", zap.Error(err))
-			}
-			return
-		} else if errors.Is(err, dto.ErrBadOrderNum) {
-			if err = WriteResponse(w, http.StatusUnprocessableEntity, ErrMessage("Неверный формат номера заказа")); err != nil {
-				h.log.Error("OrderHandler: can't write response", zap.Error(err))
-			}
-			return
-		} else {
-			if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
-				h.log.Error("OrderHandler: can't write response", zap.Error(err))
-			}
-			return
+		switch err {
+		case dto.ErrOrderRegistered:
+			statusCode = http.StatusOK
+			msg = "Номер заказа уже был загружен этим пользователем"
+		case dto.ErrOrderRegisteredByAnotherUser:
+			statusCode = http.StatusConflict
+			msg = "Номер заказа уже был загружен этим пользователем"
+		case dto.ErrBadParam:
+			statusCode = http.StatusBadRequest
+			msg = "Неверный формат запроса"
+		case dto.ErrBadOrderNum:
+			statusCode = http.StatusUnprocessableEntity
+			msg = "Неверный формат номера заказа"
+		default:
+			statusCode = http.StatusInternalServerError
+			msg = "Внутренняя ошибка сервера"
 		}
+		if err = WriteResponse(w, statusCode, ErrMessage(msg)); err != nil {
+			h.log.Error("OrderHandler: can't write response", zap.Error(err))
+		}
+		return
 	}
+
 	if err = WriteResponse(w, http.StatusAccepted, nil); err != nil {
 		h.log.Error("OrderHandler: can't write response", zap.Error(err))
 	}
@@ -126,6 +126,7 @@ func (h *OrderHandler) GetOrderList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res, err := h.orderService.GetOrderList(ctx, userID)
+
 	if err != nil {
 		if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
 			h.log.Error("OrderHandler: can't write response", zap.Error(err))

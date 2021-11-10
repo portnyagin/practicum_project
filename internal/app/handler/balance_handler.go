@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/portnyagin/practicum_project/internal/app/dto"
 	"github.com/portnyagin/practicum_project/internal/app/infrastructure"
 	"go.uber.org/zap"
@@ -113,23 +112,29 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = h.balanceService.Withdraw(ctx, &withdraw, userID)
+
 	if err != nil {
+		var (
+			statusCode int
+			msg        string
+		)
 		h.log.Error("BalanceHandler:Withdraw error", zap.Error(err))
-		if errors.Is(err, dto.ErrNotEnoughFunds) {
-			if err = WriteResponse(w, http.StatusPaymentRequired, ErrMessage("На счету недостаточно средств")); err != nil {
-				h.log.Error("BalanceHandler: can't write response", zap.Error(err))
-			}
-		} else if errors.Is(err, dto.ErrBadOrderNum) {
-			if err = WriteResponse(w, http.StatusUnprocessableEntity, ErrMessage("Неверный номер заказа")); err != nil {
-				h.log.Error("BalanceHandler: can't write response", zap.Error(err))
-			}
-		} else {
-			if err = WriteResponse(w, http.StatusInternalServerError, ErrMessage("Внутренняя ошибка сервера")); err != nil {
-				h.log.Error("BalanceHandler: can't write response", zap.Error(err))
-			}
+		switch err {
+		case dto.ErrNotEnoughFunds:
+			statusCode = http.StatusPaymentRequired
+			msg = "На счету недостаточно средств"
+		case dto.ErrBadOrderNum:
+			statusCode = http.StatusUnprocessableEntity
+			msg = "Неверный номер заказа"
+		default:
+			statusCode = http.StatusInternalServerError
+			msg = "Внутренняя ошибка сервера"
 		}
-		return
+		if err = WriteResponse(w, statusCode, ErrMessage(msg)); err != nil {
+			h.log.Error("BalanceHandler: can't write response", zap.Error(err))
+		}
 	}
+
 	if err = WriteResponse(w, http.StatusOK, nil); err != nil {
 		h.log.Error("BalanceHandler: can't write response", zap.Error(err))
 	}
