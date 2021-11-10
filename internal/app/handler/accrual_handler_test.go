@@ -51,6 +51,8 @@ func TestAccrualHandler_ProcessOrder(t *testing.T) {
 			h := http.HandlerFunc(target.ProcessOrder)
 			h.ServeHTTP(w, request)
 			res := w.Result()
+			defer res.Body.Close()
+
 			contentType := res.Header.Get("Content-type")
 			assert.Equal(t, tt.wants.responseCode, res.StatusCode, "Expected status %d, got %d", tt.wants.responseCode, res.StatusCode)
 			assert.Equal(t, tt.wants.contentType, contentType, "Expected status %d, got %d", tt.wants.contentType, contentType)

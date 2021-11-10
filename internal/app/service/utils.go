@@ -19,8 +19,6 @@ func CheckOrderNum(orderNum string) bool {
 		}
 		check += number
 	}
-	if (check*9)%10 == 0 {
-		return true
-	}
-	return false
+
+	return (check*9)%10 == 0
 }

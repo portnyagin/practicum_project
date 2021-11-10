@@ -119,6 +119,10 @@ func TestPostgresqlHandlerTX_Transaction(t *testing.T) {
 
 			fmt.Println("check result")
 			rows, err := target.Query(context.Background(), "select * from test_table where b=$1", tt.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			var cnt int
 			for rows.Next() {
 				cnt += 1
@@ -182,12 +186,4 @@ func TestPostgresqlHandlerTX_ExecuteBatch(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestPostgresqlHandlerTX_SelectRow(t *testing.T) {
-	row, err := target.QueryRow(context.Background(), "select * from users where 1=0")
-	var res int
-	err = row.Scan(&res)
-	fmt.Println(row)
-	fmt.Println(err)
 }

@@ -45,14 +45,14 @@ func NewAccrualService(
 	return &target
 }
 
-func (s *AccrualService) StartProcessJob(latencyInSec time.Duration) {
+func (s *AccrualService) StartProcessJob(latency time.Duration) {
 	if !s.enable {
 		return
 	}
-	t := time.NewTicker(latencyInSec * time.Second)
+	t := time.NewTicker(latency * time.Second)
 	defer t.Stop()
-	for true {
-		_ = <-t.C
+	for {
+		<-t.C
 		ctx := context.Background()
 		s.process(ctx)
 	}
