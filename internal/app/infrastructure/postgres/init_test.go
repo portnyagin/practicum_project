@@ -15,7 +15,7 @@ const Datasource = "postgresql://practicum_ut:practicum_ut@127.0.0.1:5432/postgr
 var Log *zap.Logger
 var target *PostgresqlHandlerTX
 
-func initDatabase2() {
+func initDatabase() {
 	conn, err := pgx.Connect(context.Background(), Datasource)
 	if err != nil {
 		fmt.Println("Can't init connection")
@@ -36,7 +36,7 @@ func initDatabase2() {
 func TestMain(m *testing.M) {
 	var err error
 	Log, _ = zap.NewDevelopment()
-	initDatabase2()
+	initDatabase()
 	target, err = NewPostgresqlHandlerTX(context.Background(), Datasource, Log)
 	if err != nil {
 		fmt.Println("can't init PostgresqlHandlerTX")

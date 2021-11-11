@@ -29,17 +29,13 @@ func Start() {
 		logger.Fatal("can't init configuration", zap.Error(err))
 	}
 
-	postgresHandler, err := postgres.NewPostgresqlHandler(context.Background(), config.DatabaseDSN)
-	if err != nil {
-		logger.Fatal("can't create postgres handler", zap.Error(err))
-	}
 	postgresHandlerTx, err := postgres.NewPostgresqlHandlerTX(context.Background(), config.DatabaseDSN, logger)
 	if err != nil {
 		logger.Fatal("can't create postgres handler", zap.Error(err))
 	}
 
 	if config.Reinit {
-		err = repository.ClearDatabase(context.Background(), postgresHandler)
+		err = repository.ClearDatabase(context.Background(), postgresHandlerTx)
 		if err != nil {
 			logger.Fatal("can't clear database structure", zap.Error(err))
 			return
