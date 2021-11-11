@@ -33,7 +33,7 @@ func Transactional(handler basedbhandler.Transactioner, log *zap.Logger) func(ht
 					fmt.Println(err)
 				}
 			}()
-			ctx := context.WithValue(r.Context(), "tx", tx)
+			ctx := context.WithValue(r.Context(), basedbhandler.TransactionKey("tx"), tx)
 
 			sw := statusWriter{ResponseWriter: w}
 			next.ServeHTTP(&sw, r.WithContext(ctx))

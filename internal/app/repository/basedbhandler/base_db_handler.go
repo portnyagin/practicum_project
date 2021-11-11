@@ -14,6 +14,8 @@ type DBHandler interface {
 	Close()
 }
 
+type TransactionKey string
+
 type TransactionalDBHandler interface {
 	Execute(ctx context.Context, statement string, args ...interface{}) error
 	ExecuteBatch(ctx context.Context, statement string, args [][]interface{}) error

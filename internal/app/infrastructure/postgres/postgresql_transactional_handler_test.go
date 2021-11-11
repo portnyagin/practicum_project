@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/portnyagin/practicum_project/internal/app/repository/basedbhandler"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -14,10 +15,10 @@ func TestPostgresqlHandlerTX_getTx(t *testing.T) {
 	if err != nil {
 		t.Error("can't init transaction")
 	}
-	ctxWithTransaction := context.WithValue(baseContext, "tx", tx)
+	ctxWithTransaction := context.WithValue(baseContext, basedbhandler.TransactionKey("tx"), tx)
 
 	// В значении Нужен любой объект, отличный от TX
-	ctxBad := context.WithValue(baseContext, "tx", errors.New("test"))
+	ctxBad := context.WithValue(baseContext, basedbhandler.TransactionKey("tx"), errors.New("test"))
 	type args struct {
 		ctx context.Context
 	}
@@ -97,7 +98,7 @@ func TestPostgresqlHandlerTX_Transaction(t *testing.T) {
 			if err != nil {
 				t.Error("can't init transaction")
 			}
-			ctxWithTransaction := context.WithValue(baseContext, "tx", tx)
+			ctxWithTransaction := context.WithValue(baseContext, basedbhandler.TransactionKey("tx"), tx)
 
 			fmt.Println("insert data undo transaction")
 			for i := 0; i < tt.args.rowCnt; i++ {
