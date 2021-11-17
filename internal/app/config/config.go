@@ -8,9 +8,12 @@ import (
 )
 
 type AppConfig struct {
-	ServerAddress string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	DatabaseDSN   string `env:"DATABASE_DSN" envDefault:"postgresql://practicum_project:practicum_project@127.0.0.1:5432/mdb"`
-	Reinit        bool   `env:"REINIT" envDefault:"true"`
+	ServerAddress         string `env:"RUN_ADDRESS" envDefault:":8080"`
+	DatabaseDSN           string `env:"DATABASE_URI" envDefault:"postgresql://practicum_project:practicum_project@127.0.0.1:5432/mdb"`
+	AccrualServiceAddress string `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:"http://localhost:3000"`
+	Reinit                bool   `env:"REINIT" envDefault:"true"`
+	ValidateOrderNum      bool   `env:"VALIDATE_ORDER" envDefault:"true"`
+	EnableAccrual         bool   `env:"ENABLE_ACCRUAL" envDefault:"true"`
 }
 
 func (config *AppConfig) Init() error {
@@ -22,7 +25,10 @@ func (config *AppConfig) Init() error {
 
 	pflag.StringVarP(&config.ServerAddress, "a", "a", config.ServerAddress, "Http-server address")
 	pflag.StringVarP(&config.DatabaseDSN, "d", "d", config.DatabaseDSN, "Database connection string")
-	pflag.BoolVarP(&config.Reinit, "r", "r", config.Reinit, "Reinit database")
+	pflag.StringVarP(&config.AccrualServiceAddress, "r", "r", config.AccrualServiceAddress, "Accrual Service Address")
+	pflag.BoolVarP(&config.Reinit, "c", "c", config.Reinit, "Reinit database")
+	pflag.BoolVarP(&config.ValidateOrderNum, "v", "v", config.ValidateOrderNum, "Validate order num")
+	pflag.BoolVarP(&config.EnableAccrual, "y", "y", config.EnableAccrual, "Enable accrual processing")
 	pflag.Parse()
 
 	if config.ServerAddress == "" || config.DatabaseDSN == "" {

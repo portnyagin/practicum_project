@@ -2,8 +2,10 @@ package basedbhandler
 
 import (
 	"context"
+	"github.com/jackc/pgx/v4"
 )
 
+//go:generate mockgen -destination=mocks/mock_postgres_handler.go -package=mocks . DBHandler
 type DBHandler interface {
 	Execute(ctx context.Context, statement string, args ...interface{}) error
 	ExecuteBatch(ctx context.Context, statement string, args [][]interface{}) error
@@ -12,11 +14,28 @@ type DBHandler interface {
 	Close()
 }
 
+type TransactionKey string
+
+type TransactionalDBHandler interface {
+	Execute(ctx context.Context, statement string, args ...interface{}) error
+	ExecuteBatch(ctx context.Context, statement string, args [][]interface{}) error
+	Query(ctx context.Context, statement string, args ...interface{}) (Rows, error)
+	QueryRow(ctx context.Context, statement string, args ...interface{}) (Row, error)
+	Transactioner
+}
+
+type Transactioner interface {
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
+	NewTx(ctx context.Context) (pgx.Tx, error)
+}
+
 type Rows interface {
 	Scan(dest ...interface{}) error
 	Next() bool
 }
 
+//go:generate mockgen -destination=mocks/mock_row.go -package=mocks . Row
 type Row interface {
 	Scan(dest ...interface{}) error
 }
